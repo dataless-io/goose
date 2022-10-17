@@ -1,0 +1,4 @@
+github.com/fulldump/box v0.2.0 h1:T1bflY0hHl0LGa56Cvj6+sLA4picyi/DpPJuwJJ1vII=
+github.com/fulldump/box v0.2.0/go.mod h1:WOwCbBxFaWl2BoWc04WOslZASB8+3vV3DRPJdRSR+/M=
+github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
+github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
