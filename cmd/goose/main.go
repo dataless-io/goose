@@ -9,15 +9,27 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+	"unicode/utf8"
 
 	"github.com/fulldump/box"
+	"github.com/fulldump/goconfig"
 	"github.com/google/uuid"
 
 	"goose/glueauth"
 	"goose/statics"
 )
 
+type Config struct {
+	Addr    string `json:"addr"`
+	Statics string `json:"statics"`
+}
+
 func main() {
+
+	c := Config{
+		Addr: ":8080", // default address
+	}
+	goconfig.Read(&c)
 
 	b := box.NewBox()
 
@@ -60,10 +72,18 @@ func main() {
 	// Mount statics
 	b.Resource("/*").
 		WithActions(
-			box.Get(statics.ServeStatics("")).WithName("serveStatics"),
+			box.Get(statics.ServeStatics(c.Statics)).WithName("serveStatics"),
 		)
 
-	b.ListenAndServe()
+	s := &http.Server{
+		Addr:    c.Addr,
+		Handler: b,
+	}
+	fmt.Println("listening on ", s.Addr)
+	err := s.ListenAndServe()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }
 
 type PublishInput struct {
@@ -76,6 +96,12 @@ type PublishInput struct {
 	}'
 */
 func Publish(ctx context.Context, input *PublishInput) (interface{}, error) {
+
+	l := utf8.RuneCountInString(input.Message)
+	lmax := 300
+	if l > lmax {
+		return nil, fmt.Errorf("message length exceeded (%d of %d chars)", l, lmax)
+	}
 
 	auth := glueauth.GetAuth(ctx)
 
