@@ -24,12 +24,15 @@
         </div>
 
         <div id="welcome" class="welcome">
-            <h1>Welcome to Goose!!!!</h1>
+            <h1>Welcome to Goose!!!</h1>
 
-            <img src="logo-big.png" alt="loggoose" style="width: 100%; max-width: 200px;">
+            <div style="text-align: center;">
+                <img src="logo-big.png" alt="loggoose" style="width: 100%; max-width: 200px;"><br>
+                Entra a Goose y disfruta!<br>
+                <br>
+                <a href="/auth/login" class="button-login">Entra</a>
+            </div>
 
-            Entra a Goose y disfruta!
-            <a href="/auth/login">Entra</a>
         </div>
 
         <div id="publish" class="publish">
@@ -82,7 +85,20 @@
             border-radius: 8px;
             padding: 8px;
             margin: 8px;
+        }
 
+        .button-login {
+            display: inline-block;
+            border-radius: 3px;
+            padding: 0.8rem 4rem;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            color: white;
+            background-color: #f57f56;
+            font-weight: bold;
+            text-decoration: none;
+            margin: 1rem 0;
         }
     </style>
 
