@@ -17,7 +17,7 @@
 
     <div class="center" style="max-width: 600px; margin: 0 auto;">
 
-        <div style="text-align: center;">
+        <div id="loggoose" style="text-align: center; display: none;">
             <img src="logo-small.png" alt="loggoose" style="height: 64px; vertical-align: -14px;">
             &nbsp;&nbsp;&nbsp;&nbsp;
             <span style="font-weight: bold; font-size: 50px;">Goose</span>
@@ -129,6 +129,7 @@
             if (me.error) return;
             user = me;
             id('welcome').style.display = 'none';
+            id('loggoose').style.display = 'block';
             id('logout').style.display = 'block';
             id('publish').style.display = 'block';
             id('timeline').style.display = 'block';
