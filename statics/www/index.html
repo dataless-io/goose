@@ -65,13 +65,30 @@
             margin: 8px;
         }
 
-        .tweet .author {
+        .tweet .right {
             float: right;
+            margin: -4px;
+        }
+
+        .tweet .author {
+            color: #f57f56;
+            font-weight: bold;
+            display: inline;
+        }
+
+        .tweet .avatar {
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin-left: 0.4rem;
+            zzbackground: #F4F4F4;
         }
 
         .tweet .date {
             font-size: 70%;
             color: rgb(104, 144, 197);
+            padding: 0px 0px 4px;
         }
 
         .timeline {
@@ -104,18 +121,44 @@
 
     <script>
 
-        var user = {};
+        var user = {
+            "email": "gerardooscarjt@gmail.com",
+            "id": "user-12",
+            "nick": "gerardooscarjt",
+            "picture": "https://lh3.googleusercontent.com/a-/ACNPEu8h8e8wfcL1Hsk4JbFsROFXIBNIllOFLLPnWEDWV2s=s96-c",
+        };
 
         function id(s) {
             return document.getElementById(s);
         }
+
+        function prettyDate(d) {
+            let now = new Date();
+
+            let delta = (now.getTime() - d.getTime()) / 1000;
+
+            if (delta < 60) {
+                return 'justo ahora';
+            }
+
+            if (delta < 3600) {
+                return `hace ${(delta/60).toFixed()} minutos`;
+            }
+
+            if (delta < 86400) {
+                return `hace ${(delta/3600).toFixed()} horas`;
+            }
+
+            return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} a las ${d.getHours()}:${d.getMinutes()}`
+        }
+
 
         id('button-publish').addEventListener('click', function () {
             let input = id('input-publish');
             let body = {
                 message: input.value,
             };
-            fetch('/v0/publish', {method:'POST', body:JSON.stringify(body), headers: {'X-Glue-Authentication':' {"user":{"id":"user-12"}}'}})
+            fetch('/v0/publish', {method:'POST', body:JSON.stringify(body), headers: {'X-Glue-Authentication':' {"user":{"id":"user-12", "nick": "gerardooscarjt", "picture": "https://lh3.googleusercontent.com/a-/ACNPEu8h8e8wfcL1Hsk4JbFsROFXIBNIllOFLLPnWEDWV2s=s96-c"}}'}})
                 .then(resp => resp.json()).then(entry => {
                     if (entry.error) {
                         alert(entry.error.message);
@@ -159,14 +202,25 @@
             tweet.classList.add('tweet');
             tweet.id = entry.id;
 
+            let right = document.createElement('div');
+            right.classList.add('right');
+            tweet.appendChild(right);
+
             let author = document.createElement('div');
             author.classList.add('author');
-            author.textContent = '@' + entry.user_id;
-            tweet.appendChild(author);
+            author.textContent = '@' + (entry.nick || entry.user_id);
+            right.appendChild(author);
+
+            let avatar = document.createElement('img');
+            avatar.classList.add('avatar');
+            avatar.src = entry.picture || 'avatar.png';
+            right.appendChild(avatar);
 
             let date = document.createElement('div');
             date.classList.add('date');
-            date.textContent = (new Date(1000*entry.timestamp)).toLocaleString();
+            date.title = (new Date(1000*entry.timestamp)).toLocaleString();
+            // date.textContent = (new Date(1000*entry.timestamp)).toLocaleString();
+            date.textContent = prettyDate(new Date(1000*entry.timestamp));
             tweet.appendChild(date);
 
             let message = document.createElement('div');

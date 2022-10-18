@@ -110,11 +110,15 @@ func Publish(ctx context.Context, input *PublishInput) (interface{}, error) {
 		Message   string `json:"message"`
 		Timestamp int64  `json:"timestamp"`
 		UserID    string `json:"user_id"`
+		Nick      string `json:"nick"`
+		Picture   string `json:"picture"`
 	}{
 		ID:        uuid.New().String(),
 		Message:   input.Message,
 		Timestamp: time.Now().Unix(),
 		UserID:    auth.User.ID,
+		Nick:      auth.User.Nick,
+		Picture:   auth.User.Picture,
 	}
 
 	payload, _ := json.Marshal(tweet) // todo: handle err
