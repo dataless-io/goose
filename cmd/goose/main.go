@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"time"
 	"unicode/utf8"
 
@@ -24,12 +23,26 @@ type Config struct {
 	Statics string `json:"statics"`
 }
 
+// TODO: inject this and make it configurable
+var base = "https://saas.inceptiondb.io/v1"
+var databaseID = "ab9965be-56a7-4d55-bf14-3e8b96d742c2"
+var apiKey = "f22b7f32-9bbc-42c1-97a6-96f0abec655d"
+var apiSecret = "8048a56c-0406-4af3-9a59-a17ca33fe7fa"
+
+/*
+databaseID: ab9965be-56a7-4d55-bf14-3e8b96d742c2
+apiKey: f22b7f32-9bbc-42c1-97a6-96f0abec655d
+apiSecret: 8048a56c-0406-4af3-9a59-a17ca33fe7fa
+*/
+
 func main() {
 
 	c := Config{
 		Addr: ":8080", // default address
 	}
 	goconfig.Read(&c)
+
+	ensureCollection("tweets")
 
 	b := box.NewBox()
 
@@ -86,6 +99,27 @@ func main() {
 	}
 }
 
+func ensureCollection(collectionName string) {
+	endpoint := base + "/databases/" + databaseID + "/collections"
+
+	payload, err := json.Marshal(JSON{
+		"name": collectionName,
+	}) // todo: handle err
+	if err != nil {
+		panic(fmt.Errorf("cannot create collection: '%s'", err.Error()))
+	}
+
+	req, _ := http.NewRequest("POST", endpoint, bytes.NewReader(payload))
+	req.Header.Set("Api-Key", apiKey)
+	req.Header.Set("Api-Secret", apiSecret)
+
+	resp, err := http.DefaultClient.Do(req)
+
+	fmt.Println("Created collection tweets:", resp.StatusCode)
+	body, _ := io.ReadAll(resp.Body)
+	fmt.Println("body:", string(body))
+}
+
 type PublishInput struct {
 	Message string `json:"message"`
 }
@@ -123,8 +157,11 @@ func Publish(ctx context.Context, input *PublishInput) (interface{}, error) {
 
 	payload, _ := json.Marshal(tweet) // todo: handle err
 
-	endpoint := "https://inceptiondb.io/collections/tweets"
+	endpoint := base + "/databases/" + databaseID + "/collections/tweets:insert"
 	req, _ := http.NewRequest("POST", endpoint, bytes.NewReader(payload))
+	req.Header.Set("Api-Key", apiKey)
+	req.Header.Set("Api-Secret", apiSecret)
+
 	// todo: handle err
 
 	_, err := http.DefaultClient.Do(req)
@@ -205,18 +242,22 @@ func PrettyErrorInterceptor(next box.H) box.H {
 
 func Timeline(ctx context.Context, w http.ResponseWriter) error {
 
-	filterByUserID := JSON{
-		"user_id": box.GetUrlParameter(ctx, "user-id"),
+	payload, err := json.Marshal(JSON{
+		"skip":  0,
+		"limit": 100,
+		"filter": JSON{
+			"user_id": box.GetUrlParameter(ctx, "user-id"),
+		},
+	}) // todo: handle err
+	if err != nil {
+		return fmt.Errorf("error reading from persistence layer")
 	}
-	data, _ := json.Marshal(filterByUserID)
 
-	params := url.Values{}
-	params.Add("skip", "0")
-	params.Add("limit", "100")
-	params.Add("filter", string(data))
+	endpoint := base + "/databases/" + databaseID + "/collections/tweets:find"
 
-	endpoint := "https://inceptiondb.io/collections/tweets?" + params.Encode()
-	req, _ := http.NewRequest("GET", endpoint, nil)
+	req, _ := http.NewRequest("POST", endpoint, bytes.NewReader(payload))
+	req.Header.Set("Api-Key", apiKey)
+	req.Header.Set("Api-Secret", apiSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
