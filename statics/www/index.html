@@ -47,15 +47,24 @@
             </div>
         </div>
 
-        <div id="timeline" class="timeline">
-
+        <div class="tabs" style="text-align: center; padding-top: 20px;">
+            <button id="button-my-timeline">Mi timeline</button>
+            <button id="button-main-stream" class="selected">Main steam</button>
         </div>
+
+        <div id="timeline" class="timeline"></div>
+
+        <div id="mainstream" class="mainstream"></div>
     </div>
 
 
     <style>
         html {
             font-family: sans-serif;
+        }
+
+        button {
+            padding: 0.4rem 2rem;
         }
 
         .tweet {
@@ -91,7 +100,17 @@
             padding: 0px 0px 4px;
         }
 
+        .tweet .message {
+            overflow: hidden;
+            overflow-wrap: break-word;
+        }
+
         .timeline {
+            display: none;
+            margin: 16px auto;
+        }
+
+        .mainstream {
             display: none;
             margin: 16px auto;
         }
@@ -116,6 +135,21 @@
             font-weight: bold;
             text-decoration: none;
             margin: 1rem 0;
+        }
+
+        .tabs button {
+            background-color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .tabs button:hover {
+            background-color: #ece2df;
+        }
+
+        .tabs button.selected {
+            background-color: #f57f56;
         }
     </style>
 
@@ -165,21 +199,53 @@
                         return
                     }
 
-                    prependTweet(entry);
+                    prependTweet(id('timeline'), entry);
                     input.value = '';
                 });
-        });
+        }, true);
+
+        id('button-my-timeline').addEventListener('click', function (){
+            id('button-my-timeline').classList.add('selected');
+            id('button-main-stream').classList.remove('selected');
+            id('mainstream').style.display = 'none';
+            id('timeline').style.display = 'block';
+            fetchTimeline(user.id);
+        }, true);
+
+        id('button-main-stream').addEventListener('click', function (){
+            id('button-my-timeline').classList.remove('selected');
+            id('button-main-stream').classList.add('selected');
+            id('mainstream').style.display = 'block';
+            id('timeline').style.display = 'none';
+            fetchMainStream(user.id);
+        }, true);
 
         function fetchTimeline(userid) {
             const url = '/v0/users/'+encodeURIComponent(userid)+"/timeline";
             fetch(url)
                 .then((response) => response.text())
                 .then((text) => {
+                    id('timeline').innerHTML = '';
                     text
                         .split("\n")
                         .forEach(line => {
                             let entry = JSON.parse(line);
-                            prependTweet(entry);
+                            prependTweet(id('timeline'), entry);
+                        });
+                });
+        }
+
+        function fetchMainStream(userid) {
+            const url = '/v0/users/'+encodeURIComponent(userid)+"/mainstream";
+            fetch(url)
+                .then((response) => response.text())
+                .then((text) => {
+                    id('mainstream').innerHTML = '';
+                    text
+                        .split("\n")
+                        .forEach(line => {
+                            let entry = JSON.parse(line);
+                            prependTweet(id('mainstream'), entry);
                         });
                 });
         }
@@ -191,10 +257,11 @@
             id('loggoose').style.display = 'block';
             id('logout').style.display = 'block';
             id('publish').style.display = 'block';
-            id('timeline').style.display = 'block';
+            // id('timeline').style.display = 'block';
+            id('mainstream').style.display = 'block';
             id('user_picture').setAttribute('src', me.picture);
             id('user_nick').innerText = me.nick;
-            fetchTimeline(me.id);
+            fetchMainStream(me.id);
         });
 
         function paintTweet(entry) {
@@ -224,6 +291,7 @@
             tweet.appendChild(date);
 
             let message = document.createElement('div');
+            message.classList.add('message');
             message.textContent = entry.message;
             tweet.appendChild(message);
 
@@ -235,9 +303,9 @@
             id('timeline').appendChild(tweet);
         }
 
-        function prependTweet(entry) {
+        function prependTweet(container, entry) {
             let tweet = paintTweet(entry);
-            id('timeline').prepend(tweet);
+            container.prepend(tweet);
         }
 
     </script>

@@ -26,8 +26,8 @@ type Config struct {
 // TODO: inject this and make it configurable
 var base = "https://saas.inceptiondb.io/v1"
 var databaseID = "ab9965be-56a7-4d55-bf14-3e8b96d742c2"
-var apiKey = "f22b7f32-9bbc-42c1-97a6-96f0abec655d"
-var apiSecret = "8048a56c-0406-4af3-9a59-a17ca33fe7fa"
+var apiKey = "3a143a03-2ee4-46e7-8286-64a17ab2b642"
+var apiSecret = "cac508a9-32a1-43c0-ba82-859805906972"
 
 /*
 databaseID: ab9965be-56a7-4d55-bf14-3e8b96d742c2
@@ -68,6 +68,11 @@ func main() {
 	user.Resource("/timeline").
 		WithActions(
 			box.Get(Timeline),
+		)
+
+	user.Resource("/mainstream").
+		WithActions(
+			box.Get(MainStream),
 		)
 
 	user.Resource("/followers").WithActions(
@@ -129,6 +134,15 @@ type PublishInput struct {
 	  "name": "yoy"
 	}'
 */
+type Tweet struct {
+	ID        string `json:"id"`
+	Message   string `json:"message"`
+	Timestamp int64  `json:"timestamp"`
+	UserID    string `json:"user_id"`
+	Nick      string `json:"nick"`
+	Picture   string `json:"picture"`
+}
+
 func Publish(ctx context.Context, input *PublishInput) (interface{}, error) {
 
 	l := utf8.RuneCountInString(input.Message)
@@ -139,14 +153,7 @@ func Publish(ctx context.Context, input *PublishInput) (interface{}, error) {
 
 	auth := glueauth.GetAuth(ctx)
 
-	tweet := struct {
-		ID        string `json:"id"`
-		Message   string `json:"message"`
-		Timestamp int64  `json:"timestamp"`
-		UserID    string `json:"user_id"`
-		Nick      string `json:"nick"`
-		Picture   string `json:"picture"`
-	}{
+	tweet := Tweet{
 		ID:        uuid.New().String(),
 		Message:   input.Message,
 		Timestamp: time.Now().Unix(),
@@ -267,6 +274,60 @@ func Timeline(ctx context.Context, w http.ResponseWriter) error {
 	// todo: check this: res.StatusCode
 
 	io.Copy(w, res.Body)
+
+	return nil
+}
+
+func MainStream(ctx context.Context, w http.ResponseWriter) error {
+
+	collectionTweets := struct {
+		Total int
+	}{}
+
+	{
+		endpoint := base + "/databases/" + databaseID + "/collections/tweets"
+		req, _ := http.NewRequest("GET", endpoint, nil)
+		req.Header.Set("Api-Key", apiKey)
+		req.Header.Set("Api-Secret", apiSecret)
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return fmt.Errorf("persistence read error")
+		}
+		// io.Copy(os.Stdout, res.Body)
+		json.NewDecoder(res.Body).Decode(&collectionTweets) // todo: handle error
+	}
+
+	{
+		n := 100
+
+		skip := collectionTweets.Total - n
+		if skip < 0 {
+			skip = 0
+		}
+
+		payload, err := json.Marshal(JSON{
+			"skip":  skip,
+			"limit": n,
+		}) // todo: handle err
+		if err != nil {
+			return fmt.Errorf("error reading from persistence layer")
+		}
+
+		endpoint := base + "/databases/" + databaseID + "/collections/tweets:find"
+
+		req, _ := http.NewRequest("POST", endpoint, bytes.NewReader(payload))
+		req.Header.Set("Api-Key", apiKey)
+		req.Header.Set("Api-Secret", apiSecret)
+
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return fmt.Errorf("persistence read error")
+		}
+
+		// todo: check this: res.StatusCode
+
+		io.Copy(w, res.Body)
+	}
 
 	return nil
 }
