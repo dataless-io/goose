@@ -47,13 +47,12 @@
             </div>
         </div>
 
-        <div class="tabs" style="text-align: center; padding-top: 20px;">
+        <div id="tabs" class="tabs">
             <button id="button-my-timeline">Mi timeline</button>
             <button id="button-main-stream" class="selected">Main steam</button>
         </div>
 
         <div id="timeline" class="timeline"></div>
-
         <div id="mainstream" class="mainstream"></div>
     </div>
 
@@ -135,6 +134,12 @@
             font-weight: bold;
             text-decoration: none;
             margin: 1rem 0;
+        }
+
+        .tabs {
+            display: none;
+            text-align: center;
+            padding-top: 20px;
         }
 
         .tabs button {
@@ -250,19 +255,6 @@
                 });
         }
 
-        fetch('/auth/me').then(resp => resp.json()).then(me => {
-            if (me.error) return;
-            user = me;
-            id('welcome').style.display = 'none';
-            id('loggoose').style.display = 'block';
-            id('logout').style.display = 'block';
-            id('publish').style.display = 'block';
-            // id('timeline').style.display = 'block';
-            id('mainstream').style.display = 'block';
-            id('user_picture').setAttribute('src', me.picture);
-            id('user_nick').innerText = me.nick;
-            fetchMainStream(me.id);
-        });
 
         function paintTweet(entry) {
             let tweet = document.createElement('div');
@@ -307,6 +299,21 @@
             let tweet = paintTweet(entry);
             container.prepend(tweet);
         }
+
+        fetch('/auth/me').then(resp => resp.json()).then(resp => {
+            if (!(resp.id)) return;
+            user = resp;
+            id('welcome').style.display = 'none';
+            id('loggoose').style.display = 'block';
+            id('logout').style.display = 'block';
+            id('publish').style.display = 'block';
+            id('tabs').style.display = 'block';
+            // id('timeline').style.display = 'block';
+            id('mainstream').style.display = 'block';
+            id('user_picture').setAttribute('src', resp.picture);
+            id('user_nick').innerText = resp.nick;
+            fetchMainStream(resp.id);
+        });
 
     </script>
 </body>
