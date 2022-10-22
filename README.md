@@ -1,6 +1,6 @@
 # Goose
 
-<div style="text-align: center;">
+<div style="text-align: center;" align="center">
     <img src="statics/www/logo-200.jpg">
 </div> 
 
