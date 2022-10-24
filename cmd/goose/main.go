@@ -26,10 +26,16 @@ type Config struct {
 // TODO: inject this and make it configurable
 var base = "https://saas.inceptiondb.io/v1"
 var databaseID = "ab9965be-56a7-4d55-bf14-3e8b96d742c2"
-var apiKey = "3a143a03-2ee4-46e7-8286-64a17ab2b642"
-var apiSecret = "cac508a9-32a1-43c0-ba82-859805906972"
+var apiKey = "de19b3c9-ef29-445f-a0c1-92440c206246"
+var apiSecret = "f49e48e7-a5e8-4c8a-9dec-1c0b8a7eaa5f"
 
 /*
+
+{
+"name":"MasterKey3",
+"key":"de19b3c9-ef29-445f-a0c1-92440c206246","
+secret":"f49e48e7-a5e8-4c8a-9dec-1c0b8a7eaa5f","creation_date":"2022-10-24T16:27:34.674407723Z"}
+
 databaseID: ab9965be-56a7-4d55-bf14-3e8b96d742c2
 apiKey: f22b7f32-9bbc-42c1-97a6-96f0abec655d
 apiSecret: 8048a56c-0406-4af3-9a59-a17ca33fe7fa
