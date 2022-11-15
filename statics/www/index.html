@@ -289,7 +289,7 @@
                         .split("\n")
                         .forEach(line => {
                             let entry = JSON.parse(line);
-                            prependTweet(id('mainstream'), entry);
+                            appendTweet(id('mainstream'), entry);
                         });
                 });
         }
