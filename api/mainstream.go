@@ -13,7 +13,7 @@ func MainStream(ctx context.Context, w http.ResponseWriter) error {
 
 	max := 100
 	reader, err := GetInceptionClient(ctx).Find("tweets", inceptiondb.FindQuery{
-		Index:   "by timestamp",
+		Index:   "by timestamp-id",
 		Limit:   max,
 		Reverse: true,
 	})
