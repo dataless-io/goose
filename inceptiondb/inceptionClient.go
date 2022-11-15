@@ -125,9 +125,11 @@ func (c *Client) Insert(collection string, document interface{}) error {
 }
 
 type FindQuery struct {
-	Skip   int  `json:"skip"`
-	Limit  int  `json:"limit"`
-	Filter JSON `json:"filter"`
+	Index   string `json:"index"`
+	Skip    int    `json:"skip"`
+	Limit   int    `json:"limit"`
+	Filter  JSON   `json:"filter"`
+	Reverse bool   `json:"reverse"`
 }
 
 func (c *Client) Find(collection string, query FindQuery) (io.Reader, error) {

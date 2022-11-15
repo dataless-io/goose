@@ -23,10 +23,12 @@ func main() {
 	c := Config{
 		Addr: ":8080", // default address
 		Inception: inceptiondb.Config{
-			Base:       "https://saas.inceptiondb.io/v1",
-			DatabaseID: "ab9965be-56a7-4d55-bf14-3e8b96d742c2",
-			ApiKey:     "de19b3c9-ef29-445f-a0c1-92440c206246",
-			ApiSecret:  "f49e48e7-a5e8-4c8a-9dec-1c0b8a7eaa5f",
+			Base: "https://saas.inceptiondb.io/v1",
+
+			// Development credentials by default:
+			DatabaseID: "c3b4b9ea-1f16-4b10-826a-d3190234a440",
+			ApiKey:     "948b9e09-b538-44ac-9310-61484a5c4782",
+			ApiSecret:  "72860aba-f318-4737-9849-b204ae796c4f",
 		},
 	}
 	goconfig.Read(&c)
