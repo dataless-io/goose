@@ -329,9 +329,9 @@
             return tweet;
         }
 
-        function appendTweet(entry) {
+        function appendTweet(container, entry) {
             let tweet = paintTweet(entry);
-            id('timeline').appendChild(tweet);
+            container.appendChild(tweet);
         }
 
         function prependTweet(container, entry) {
