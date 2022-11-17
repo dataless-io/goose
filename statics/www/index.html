@@ -199,12 +199,8 @@
 
     <script>
 
-        var user = {
-            "email": "gerardooscarjt@gmail.com",
-            "id": "user-12",
-            "nick": "gerardooscarjt",
-            "picture": "https://lh3.googleusercontent.com/a-/ACNPEu8h8e8wfcL1Hsk4JbFsROFXIBNIllOFLLPnWEDWV2s=s96-c",
-        };
+        var user = {};
+        var XAuthHeader = '';
 
         function id(s) {
             return document.getElementById(s);
@@ -236,7 +232,7 @@
             let body = {
                 message: input.value,
             };
-            fetch('/v0/publish', {method:'POST', body:JSON.stringify(body), headers: {'X-Glue-Authentication':' {"user":{"id":"user-12", "nick": "gerardooscarjt", "picture": "https://lh3.googleusercontent.com/a-/ACNPEu8h8e8wfcL1Hsk4JbFsROFXIBNIllOFLLPnWEDWV2s=s96-c"}}'}})
+            fetch('/v0/publish', {method:'POST', body:JSON.stringify(body), headers: {'X-Glue-Authentication':XAuthHeader}})
                 .then(resp => resp.json()).then(entry => {
                     if (entry.error) {
                         alert(entry.error.message);
@@ -274,7 +270,7 @@
                         .split("\n")
                         .forEach(line => {
                             let entry = JSON.parse(line);
-                            prependTweet(id('timeline'), entry);
+                            appendTweet(id('timeline'), entry);
                         });
                 });
         }
@@ -342,6 +338,8 @@
         fetch('/auth/me').then(resp => resp.json()).then(resp => {
             if (!(resp.id)) return;
             user = resp;
+            XAuthHeader = JSON.stringify({user});
+
             id('welcome').style.display = 'none';
             id('loggoose').style.display = 'block';
             id('logout').style.display = 'block';

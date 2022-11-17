@@ -13,9 +13,27 @@ func Bootstrap(c Config) (start, stop func() error) {
 
 	inception := inceptiondb.NewClient(c.Inception)
 
-	err := inception.EnsureCollection("tweets")
-	if err != nil {
-		panic("ensure collection tweets: " + err.Error())
+	{
+		err := inception.EnsureIndex("tweets", &inceptiondb.IndexOptions{
+			Name:   "by timestamp-id",
+			Type:   "btree",
+			Fields: []string{"timestamp", "id"},
+			Sparse: true,
+		})
+		if err != nil {
+			panic("ensure index 'by timestamp-id' on tweets: " + err.Error())
+		}
+	}
+	{
+		err := inception.EnsureIndex("tweets", &inceptiondb.IndexOptions{
+			Name:   "by user-timestamp-id",
+			Type:   "btree",
+			Fields: []string{"user_id", "-timestamp", "id"},
+			Sparse: true,
+		})
+		if err != nil {
+			panic("ensure index 'by timestamp-id' on tweets: " + err.Error())
+		}
 	}
 
 	a := api.Build(inception, c.Statics)

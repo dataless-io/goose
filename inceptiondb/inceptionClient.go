@@ -8,6 +8,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
+	"strings"
 )
 
 type Config struct {
@@ -88,6 +90,101 @@ func (c *Client) EnsureCollection(name string) error {
 	return nil
 }
 
+type IndexOptions struct {
+	Name   string   `json:"name"`
+	Type   string   `json:"type"`
+	Field  string   `json:"field,omitempty"`
+	Fields []string `json:"fields,omitempty"`
+	Sparse bool     `json:"sparse,omitempty"`
+	Unique bool     `json:"unique,omitempty"`
+}
+
+type ApiError struct {
+	Description string `json:"description"`
+	Message     string `json:"message"`
+}
+
+func (a *ApiError) Error() string {
+	return a.Description + ": " + a.Message
+}
+
+func (a *ApiError) UnmarshalJSON(i []byte) error {
+
+	d := struct {
+		Error struct {
+			Description string `json:"description"`
+			Message     string `json:"message"`
+		} `json:"error"`
+	}{}
+
+	err := json.Unmarshal(i, &d)
+	if err != nil {
+		return err
+	}
+
+	a.Description = d.Error.Description
+	a.Message = d.Error.Message
+
+	return nil
+}
+
+func (c *Client) CreateIndex(collection string, options *IndexOptions) error {
+
+	endpoint := c.config.Base + "/databases/" + c.config.DatabaseID + "/collections/" + collection + ":createIndex"
+
+	payload, err := json.Marshal(options)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(payload))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Api-Key", c.config.ApiKey)
+	req.Header.Set("Api-Secret", c.config.ApiSecret)
+
+	resp, err := c.HttpClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		io.Copy(os.Stdout, resp.Body)
+		resp.Body.Close()
+	}()
+
+	if resp.StatusCode == http.StatusCreated {
+		return nil
+	}
+
+	apiError := ApiError{}
+	json.NewDecoder(resp.Body).Decode(&apiError)
+
+	if resp.StatusCode == http.StatusConflict || strings.Contains(apiError.Message, "already exists") {
+		return ErrorAlreadyExist
+	}
+	if resp.StatusCode == http.StatusForbidden {
+		return ErrorForbidden
+	}
+	if resp.StatusCode == http.StatusUnauthorized {
+		return ErrorUnauthorized
+	}
+
+	return ErrorUnexpected
+}
+
+func (c *Client) EnsureIndex(collection string, options *IndexOptions) error {
+
+	err := c.CreateIndex(collection, options)
+	if err == ErrorAlreadyExist {
+		return nil
+	}
+
+	return err
+}
+
 func (c *Client) Insert(collection string, document interface{}) error {
 
 	payload, err := json.Marshal(document) // todo: handle err
@@ -107,8 +204,11 @@ func (c *Client) Insert(collection string, document interface{}) error {
 	if err != nil {
 		return err
 	}
+	defer func() {
+		io.Copy(os.Stdout, resp.Body)
+		resp.Body.Close()
+	}()
 
-	io.Copy(io.Discard, resp.Body)
 	// todo: unmarshal body on document?
 
 	if resp.StatusCode == http.StatusCreated {
@@ -125,11 +225,13 @@ func (c *Client) Insert(collection string, document interface{}) error {
 }
 
 type FindQuery struct {
-	Index   string `json:"index"`
-	Skip    int    `json:"skip"`
-	Limit   int    `json:"limit"`
-	Filter  JSON   `json:"filter"`
-	Reverse bool   `json:"reverse"`
+	Index   string `json:"index,omitempty"`
+	Skip    int    `json:"skip,omitempty"`
+	Limit   int    `json:"limit,omitempty"`
+	Filter  JSON   `json:"filter,omitempty"`
+	Reverse bool   `json:"reverse,omitempty"`
+	From    JSON   `json:"from,omitempty"`
+	To      JSON   `json:"to,omitempty"`
 }
 
 func (c *Client) Find(collection string, query FindQuery) (io.Reader, error) {
@@ -156,6 +258,12 @@ func (c *Client) Find(collection string, query FindQuery) (io.Reader, error) {
 	if resp.StatusCode == http.StatusOK {
 		return resp.Body, nil
 	}
+
+	defer func() {
+		io.Copy(os.Stdout, resp.Body)
+		resp.Body.Close()
+	}()
+
 	if resp.StatusCode == http.StatusForbidden {
 		return nil, ErrorForbidden
 	}

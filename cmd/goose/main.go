@@ -26,9 +26,9 @@ func main() {
 			Base: "https://saas.inceptiondb.io/v1",
 
 			// Development credentials by default:
-			DatabaseID: "c3b4b9ea-1f16-4b10-826a-d3190234a440",
-			ApiKey:     "948b9e09-b538-44ac-9310-61484a5c4782",
-			ApiSecret:  "72860aba-f318-4737-9849-b204ae796c4f",
+			DatabaseID: "1b5b8fef-db19-4308-852d-d0c61eda7143",
+			ApiKey:     "973417a6-ea20-4ac9-8b9f-6f3db9213a01",
+			ApiSecret:  "ebac1daf-48fc-4e88-a6ba-04ebf1b48125",
 		},
 	}
 	goconfig.Read(&c)

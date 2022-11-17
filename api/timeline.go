@@ -14,10 +14,18 @@ import (
 func Timeline(ctx context.Context, w http.ResponseWriter) error {
 
 	reader, err := GetInceptionClient(ctx).Find("tweets", inceptiondb.FindQuery{
+		Index: "by user-timestamp-id",
 		Skip:  0,
 		Limit: 100,
-		Filter: JSON{
-			"user_id": box.GetUrlParameter(ctx, "user-id"),
+		From: JSON{
+			"id":        "",
+			"timestamp": 99999999999999,
+			"user_id":   box.GetUrlParameter(ctx, "user-id"),
+		},
+		To: JSON{
+			"id":        "",
+			"timestamp": 0,
+			"user_id":   box.GetUrlParameter(ctx, "user-id"),
 		},
 	})
 	if err != nil {
