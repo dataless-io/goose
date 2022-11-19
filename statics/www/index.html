@@ -115,6 +115,33 @@
             white-space: break-spaces;
         }
 
+        .tweet .buttons {
+            text-align: center;
+        }
+
+        .tweet .buttons .button {
+            background-color: transparent;
+            border: none;
+            padding: 4px 0;
+            width: 60px;
+        }
+
+        .replayBox {
+            border: solid silver 1px;
+            border-radius: 3px;
+            padding: 8px;
+            background-color: #1b51f7;
+        }
+
+        .replayBox textarea {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .replayBox .buttons {
+            text-align: right;
+        }
+
         .timeline {
             display: none;
             margin: 16px auto;
@@ -292,7 +319,10 @@
         }
 
 
-        function paintTweet(entry) {
+        function paintTweet(entry, options) {
+
+            options = options || {};
+
             let tweet = document.createElement('div');
             tweet.classList.add('tweet');
             tweet.id = entry.id;
@@ -323,16 +353,83 @@
             message.textContent = entry.message;
             tweet.appendChild(message);
 
+            if (entry.linked_tweet) {
+                let linkedTweet = paintTweet(entry.linked_tweet);
+                tweet.appendChild(linkedTweet);
+            }
+
+            if (options.paintButtons) {
+                let buttons = document.createElement('div');
+                buttons.classList.add('buttons');
+                tweet.appendChild(buttons);
+
+                let buttonReply = document.createElement('button');
+                buttonReply.classList.add('button');
+                buttonReply.classList.add('button-reply');
+                buttonReply.innerHTML = '🗨';
+                buttonReply.title = 'Responder';
+                buttonReply.addEventListener('click', paintReply, true);
+                buttonReply.entry = entry;
+                buttons.appendChild(buttonReply);
+            }
+
             return tweet;
         }
 
+        function paintReply() {
+
+            let honkBox = this.parentNode.parentNode;
+            let honkButtons = this.parentNode;
+            let entry = this.entry;
+
+            let replayBox = document.createElement('div');
+            replayBox.classList.add('replayBox');
+            honkBox.insertBefore(replayBox, honkButtons);
+
+            let input = document.createElement('textarea');
+            input.setAttribute('rows', '3');
+            replayBox.appendChild(input);
+
+            let buttons = document.createElement('div');
+            buttons.classList.add('buttons');
+            replayBox.appendChild(buttons);
+
+            let buttonPublish = document.createElement('button');
+            buttonPublish.innerHTML = 'Honk! 🐤';
+            buttonPublish.addEventListener('click', function (){
+
+                sendReply(entry.id, input.value, function (honk) {
+                    honkBox.insertBefore(paintTweet(honk), honkButtons);
+                    honkBox.removeChild(replayBox);
+                });
+
+            }, true);
+            buttons.appendChild(buttonPublish);
+        }
+
+        function sendReply(honkId, message, f) {
+            let body = {
+                honkId,
+                message,
+            };
+            fetch('/v0/reply', {method:'POST', body:JSON.stringify(body), headers: {'X-Glue-Authentication':XAuthHeader}})
+                .then(resp => resp.json()).then(entry => {
+
+                if (entry.error) {
+                    alert(entry.error.message);
+                    return
+                }
+                f(entry);
+            });
+        }
+
         function appendTweet(container, entry) {
-            let tweet = paintTweet(entry);
+            let tweet = paintTweet(entry, {paintButtons:true, levels: 1});
             container.appendChild(tweet);
         }
 
         function prependTweet(container, entry) {
-            let tweet = paintTweet(entry);
+            let tweet = paintTweet(entry, {paintButtons:true});
             container.prepend(tweet);
         }
 

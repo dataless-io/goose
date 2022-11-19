@@ -1,6 +1,8 @@
 package api
 
 import (
+	"context"
+	"log"
 	"net/http"
 
 	"github.com/fulldump/box"
@@ -16,6 +18,14 @@ func Build(inception *inceptiondb.Client, staticsDir string) http.Handler {
 
 	b.WithInterceptors(PrettyErrorInterceptor)
 
+	b.WithInterceptors(func(next box.H) box.H {
+		return func(ctx context.Context) {
+			req := box.GetRequest(ctx)
+			log.Println(req.Method, req.URL.String())
+			next(ctx)
+		}
+	})
+
 	v0 := b.Resource("/v0").
 		WithInterceptors(
 			InjectInceptionClient(inception),
@@ -23,6 +33,12 @@ func Build(inception *inceptiondb.Client, staticsDir string) http.Handler {
 
 	v0.Resource("/publish").WithActions(
 		box.Post(Publish),
+	).WithInterceptors(
+		glueauth.Require,
+	)
+
+	v0.Resource("/reply").WithActions(
+		box.Post(Reply),
 	).WithInterceptors(
 		glueauth.Require,
 	)

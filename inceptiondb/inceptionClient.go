@@ -232,9 +232,10 @@ type FindQuery struct {
 	Reverse bool   `json:"reverse,omitempty"`
 	From    JSON   `json:"from,omitempty"`
 	To      JSON   `json:"to,omitempty"`
+	Value   string `json:"value"`
 }
 
-func (c *Client) Find(collection string, query FindQuery) (io.Reader, error) {
+func (c *Client) Find(collection string, query FindQuery) (io.ReadCloser, error) {
 
 	payload, err := json.Marshal(query)
 	if err != nil {
@@ -272,6 +273,25 @@ func (c *Client) Find(collection string, query FindQuery) (io.Reader, error) {
 	}
 
 	return nil, ErrorUnexpected
+}
+
+func (c *Client) FindOne(collection string, query FindQuery, item interface{}) error {
+
+	query.Limit = 1
+
+	r, err := c.Find(collection, query)
+	if err != nil {
+		return err
+	}
+
+	err = json.NewDecoder(r).Decode(&item)
+	if err != nil {
+		return err // todo: wrap? error decode: ?
+	}
+	io.Copy(io.Discard, r) // todo: handle err?
+	r.Close()              // todo: handle err?
+
+	return nil
 }
 
 type GetCollectionInfo struct {

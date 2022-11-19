@@ -22,12 +22,13 @@ type PublishInput struct {
 	}'
 */
 type Tweet struct {
-	ID        string `json:"id"`
-	Message   string `json:"message"`
-	Timestamp int64  `json:"timestamp"`
-	UserID    string `json:"user_id"`
-	Nick      string `json:"nick"`
-	Picture   string `json:"picture"`
+	ID          string `json:"id"`
+	Message     string `json:"message"`
+	Timestamp   int64  `json:"timestamp"`
+	UserID      string `json:"user_id"`
+	Nick        string `json:"nick"`
+	Picture     string `json:"picture"`
+	LinkedTweet *Tweet `json:"linked_tweet,omitempty"`
 }
 
 func Publish(ctx context.Context, input *PublishInput) (interface{}, error) {

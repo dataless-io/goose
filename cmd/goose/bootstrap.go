@@ -35,6 +35,17 @@ func Bootstrap(c Config) (start, stop func() error) {
 			panic("ensure index 'by timestamp-id' on tweets: " + err.Error())
 		}
 	}
+	{
+		err := inception.EnsureIndex("tweets", &inceptiondb.IndexOptions{
+			Name:   "by id",
+			Type:   "map",
+			Field:  "id",
+			Sparse: true,
+		})
+		if err != nil {
+			panic("ensure index 'by id' on tweets: " + err.Error())
+		}
+	}
 
 	a := api.Build(inception, c.Statics)
 
