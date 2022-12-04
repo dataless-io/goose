@@ -1,0 +1,17 @@
+{{define "content"}}
+
+    <div style="background-color: #19a9e9; height: 120px;"></div>
+    <div style="color: white; height: 0; font-size: 220%; font-weight: bold; padding-top: -20px; padding-left: 20px; position: relative; top: -23px;">{{ .name }}</div>
+    <div style="background-color: deepskyblue; height: 60px;"></div>
+
+    {{range .tweets  }}
+        <div class="tweet" id="{{ .id }}">
+            <div class="right">
+                <a href="/user/{{ .nick }}" class="author">@{{ .nick }}</a>
+                <img class="avatar" src="{{ .picture }}">
+            </div>
+            <div class="date" title="11/28/2022, 2:56:34 PM">{{ .timestamp }}</div>
+            <div class="message">{{ .message }}</div>
+        </div>
+    {{end}}
+{{end}}

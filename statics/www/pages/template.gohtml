@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ .title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+
+<div class="center" style="max-width: 600px; margin: 0 auto;">
+
+    <div style="overflow:hidden;">
+        <div id="auth" class="auth"></div>
+    </div>
+
+    <div>
+        <div id="loggoose" style="text-align: center; display: block;">
+            <img src="/logo-small.png" alt="loggoose" style="height: 64px; vertical-align: -14px;">
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <span style="font-weight: bold; font-size: 50px;">Goose</span>
+        </div>
+    </div>
+
+    <div>
+        {{block "content" .}}
+            THIS IS THE CONTENT
+        {{end}}
+    </div>
+
+    <div class="footer">
+        Puedes contribuir al proyecto en <br>
+        <a href="https://github.com/dataless-io/goose/">
+            <svg aria-hidden="true" height="24" viewBox="0 0 16 16" version="1.1" width="24" data-view-component="true" class="octicon octicon-mark-github" style="vertical-align: middle; height: 14px;">
+                <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+            </svg>github.com/dataless-io/goose
+        </a>
+    </div>
+
+</div>
+
+
+<style>
+    html {
+        font-family: sans-serif;
+    }
+
+    button {
+        padding: 0.4rem 2rem;
+    }
+
+    .auth {
+        float: right;
+    }
+
+    .auth .auth-picture {
+        border-radius: 50%;
+        height: 32px;
+        vertical-align: middle;
+    }
+
+    .auth .auth-nick {
+        font-weight: bold;
+        display: inline-block;
+        padding: 0 8px;
+    }
+
+    .tweet {
+        border: solid silver 1px;
+        border-radius: 8px;
+        padding: 8px;
+        margin: 8px;
+    }
+
+    .tweet .right {
+        float: right;
+        margin: -4px;
+    }
+
+    .tweet .author {
+        color: #f57f56;
+        font-weight: bold;
+        display: inline;
+    }
+
+    .tweet .avatar {
+        height: 24px;
+        width: 24px;
+        border-radius: 50%;
+        vertical-align: middle;
+        margin-left: 0.4rem;
+        zzbackground: #F4F4F4;
+    }
+
+    .tweet .date {
+        font-size: 70%;
+        color: rgb(104, 144, 197);
+        padding: 0px 0px 4px;
+    }
+
+    .tweet .message {
+        overflow: hidden;
+        overflow-wrap: break-word;
+        white-space: break-spaces;
+    }
+
+    .tweet .buttons {
+        text-align: center;
+    }
+
+    .tweet .buttons .button {
+        background-color: transparent;
+        border: none;
+        padding: 4px 0;
+        width: 60px;
+    }
+
+    .replayBox {
+        border: solid silver 1px;
+        border-radius: 3px;
+        padding: 8px;
+        background-color: #1b51f7;
+    }
+
+    .replayBox textarea {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .replayBox .buttons {
+        text-align: right;
+    }
+
+    .timeline {
+        display: none;
+        margin: 16px auto;
+    }
+
+    .mainstream {
+        display: none;
+        margin: 16px auto;
+    }
+
+    .publish {
+        display: none;
+        border: solid silver 1px;
+        border-radius: 8px;
+        padding: 8px;
+        margin: 8px;
+    }
+
+    .button-login {
+        display: inline-block;
+        border-radius: 3px;
+        padding: 0.8rem 4rem;
+        border: none;
+        font-size: 1rem;
+        cursor: pointer;
+        color: white;
+        background-color: #f57f56;
+        font-weight: bold;
+        text-decoration: none;
+        margin: 1rem 0;
+    }
+
+    .tabs {
+        display: none;
+        text-align: center;
+        padding-top: 20px;
+    }
+
+    .tabs button {
+        background-color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .tabs button:hover {
+        background-color: #ece2df;
+    }
+
+    .tabs button.selected {
+        background-color: #f57f56;
+    }
+
+    .footer {
+        font-size: 80%;
+        color: silver;
+        text-align: center;
+        padding: 1rem 0;
+        margin: 1rem 0;
+        border-top: solid silver 1px;
+        line-height: 20px;
+    }
+
+    .footer a {
+        color: gray;
+        text-decoration: none;
+    }
+
+    .footer a:hover {
+        color: dodgerblue;
+    }
+
+    .footer a svg {
+        fill: gray;
+    }
+
+    .footer a:hover svg {
+        fill: dodgerblue;
+    }
+
+</style>
+
+<script>
+
+    var user = {};
+    var XAuthHeader = '';
+
+    function id(s) {
+        return document.getElementById(s);
+    }
+
+    function prettyDate(d) {
+        let now = new Date();
+
+        let delta = (now.getTime() - d.getTime()) / 1000;
+
+        if (delta < 60) {
+            return 'justo ahora';
+        }
+
+        if (delta < 3600) {
+            return `hace ${(delta/60).toFixed()} minutos`;
+        }
+
+        if (delta < 86400) {
+            return `hace ${(delta/3600).toFixed()} horas`;
+        }
+
+        return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} a las ${d.getHours()}:${d.getMinutes()}`
+    }
+
+    /*
+    id('button-publish').addEventListener('click', function () {
+        let input = id('input-publish');
+        let body = {
+            message: input.value,
+        };
+        fetch('/v0/publish', {method:'POST', body:JSON.stringify(body), headers: {'X-Glue-Authentication':XAuthHeader}})
+            .then(resp => resp.json()).then(entry => {
+            if (entry.error) {
+                alert(entry.error.message);
+                return
+            }
+
+            prependTweet(id('timeline'), entry);
+            prependTweet(id('mainstream'), entry);
+            input.value = '';
+        });
+    }, true);
+
+    id('button-my-timeline').addEventListener('click', function (){
+        id('button-my-timeline').classList.add('selected');
+        id('button-main-stream').classList.remove('selected');
+        id('mainstream').style.display = 'none';
+        id('timeline').style.display = 'block';
+        fetchTimeline(user.id);
+    }, true);
+
+    id('button-main-stream').addEventListener('click', function (){
+        id('button-my-timeline').classList.remove('selected');
+        id('button-main-stream').classList.add('selected');
+        id('mainstream').style.display = 'block';
+        id('timeline').style.display = 'none';
+        fetchMainStream(user.id);
+    }, true);
+    */
+
+    function fetchTimeline(userid) {
+        const url = '/v0/users/'+encodeURIComponent(userid)+"/timeline";
+        fetch(url)
+            .then((response) => response.text())
+            .then((text) => {
+                id('timeline').innerHTML = '';
+                text
+                    .split("\n")
+                    .forEach(line => {
+                        let entry = JSON.parse(line);
+                        appendTweet(id('timeline'), entry);
+                    });
+            });
+    }
+
+    function fetchMainStream(userid) {
+        const url = '/v0/users/'+encodeURIComponent(userid)+"/mainstream";
+        fetch(url)
+            .then((response) => response.text())
+            .then((text) => {
+                id('mainstream').innerHTML = '';
+                text
+                    .split("\n")
+                    .forEach(line => {
+                        let entry = JSON.parse(line);
+                        appendTweet(id('mainstream'), entry);
+                    });
+            });
+    }
+
+
+    function paintTweet(entry, options) {
+
+        options = options || {};
+
+        let tweet = document.createElement('div');
+        tweet.classList.add('tweet');
+        tweet.id = entry.id;
+
+        let right = document.createElement('div');
+        right.classList.add('right');
+        tweet.appendChild(right);
+
+        let author = document.createElement('div');
+        author.classList.add('author');
+        author.textContent = '@' + (entry.nick || entry.user_id);
+        right.appendChild(author);
+
+        let avatar = document.createElement('img');
+        avatar.classList.add('avatar');
+        avatar.src = entry.picture || 'avatar.png';
+        right.appendChild(avatar);
+
+        let date = document.createElement('div');
+        date.classList.add('date');
+        date.title = (new Date(1000*entry.timestamp)).toLocaleString();
+        // date.textContent = (new Date(1000*entry.timestamp)).toLocaleString();
+        date.textContent = prettyDate(new Date(1000*entry.timestamp));
+        tweet.appendChild(date);
+
+        let message = document.createElement('div');
+        message.classList.add('message');
+        message.textContent = entry.message;
+        tweet.appendChild(message);
+
+        if (entry.linked_tweet) {
+            let linkedTweet = paintTweet(entry.linked_tweet);
+            tweet.appendChild(linkedTweet);
+        }
+
+        if (options.paintButtons) {
+            let buttons = document.createElement('div');
+            buttons.classList.add('buttons');
+            tweet.appendChild(buttons);
+
+            let buttonReply = document.createElement('button');
+            buttonReply.classList.add('button');
+            buttonReply.classList.add('button-reply');
+            buttonReply.innerHTML = '🗨';
+            buttonReply.title = 'Responder';
+            buttonReply.addEventListener('click', paintReply, true);
+            buttonReply.entry = entry;
+            buttons.appendChild(buttonReply);
+        }
+
+        return tweet;
+    }
+
+    function paintReply() {
+
+        let honkBox = this.parentNode.parentNode;
+        let honkButtons = this.parentNode;
+        let entry = this.entry;
+
+        let replayBox = document.createElement('div');
+        replayBox.classList.add('replayBox');
+        honkBox.insertBefore(replayBox, honkButtons);
+
+        let input = document.createElement('textarea');
+        input.setAttribute('rows', '3');
+        replayBox.appendChild(input);
+
+        let buttons = document.createElement('div');
+        buttons.classList.add('buttons');
+        replayBox.appendChild(buttons);
+
+        let buttonPublish = document.createElement('button');
+        buttonPublish.innerHTML = 'Honk! 🐤';
+        buttonPublish.addEventListener('click', function (){
+
+            sendReply(entry.id, input.value, function (honk) {
+                honkBox.insertBefore(paintTweet(honk), honkButtons);
+                honkBox.removeChild(replayBox);
+            });
+
+        }, true);
+        buttons.appendChild(buttonPublish);
+    }
+
+    function sendReply(honkId, message, f) {
+        let body = {
+            honkId,
+            message,
+        };
+        fetch('/v0/reply', {method:'POST', body:JSON.stringify(body), headers: {'X-Glue-Authentication':XAuthHeader}})
+            .then(resp => resp.json()).then(entry => {
+
+            if (entry.error) {
+                alert(entry.error.message);
+                return
+            }
+            f(entry);
+        });
+    }
+
+    function appendTweet(container, entry) {
+        let tweet = paintTweet(entry, {paintButtons:true, levels: 1});
+        container.appendChild(tweet);
+    }
+
+    function prependTweet(container, entry) {
+        let tweet = paintTweet(entry, {paintButtons:true});
+        container.prepend(tweet);
+    }
+
+    fetch('/auth/me').then(resp => resp.json()).then(resp => {
+
+        let authDiv = id('auth');
+
+        if (!(resp.id)) {
+            let login = document.createElement('a');
+            login.textContent = "Login";
+            login.href = '/auth/login';
+            authDiv.append(login);
+            return;
+        }
+
+        user = resp;
+        XAuthHeader = JSON.stringify({user});
+
+        let picture = document.createElement('img');
+        picture.classList.add('auth-picture');
+        picture.setAttribute('src', resp.picture);
+        authDiv.append(picture);
+
+        let nick = document.createElement('span');
+        nick.classList.add('auth-nick');
+        nick.textContent = resp.nick;
+        authDiv.append(nick);
+
+        let logout = document.createElement('a');
+        logout.textContent = "Logout";
+        logout.href = '/auth/logout';
+        authDiv.append(logout);
+
+
+
+        //
+        // id('welcome').style.display = 'none';
+        // id('loggoose').style.display = 'block';
+        // id('logout').style.display = 'block';
+        // id('publish').style.display = 'block';
+        // id('tabs').style.display = 'block';
+        // // id('timeline').style.display = 'block';
+        // id('mainstream').style.display = 'block';
+        // id('user_picture').setAttribute('src', resp.picture);
+        // id('user_nick').innerText = resp.nick;
+        // fetchMainStream(resp.id);
+    });
+
+
+
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

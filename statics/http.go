@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
+	"path"
 	"strings"
 )
 
@@ -12,6 +14,15 @@ import (
 //
 //go:embed www/*
 var www embed.FS
+
+func FileReader(statics string) func(filename string) ([]byte, error) {
+	return func(filename string) ([]byte, error) {
+		if statics == "" {
+			return www.ReadFile(path.Join("www", filename))
+		}
+		return os.ReadFile(path.Join(statics, filename))
+	}
+}
 
 func ServeStatics(statics string) http.HandlerFunc {
 	if statics == "" {

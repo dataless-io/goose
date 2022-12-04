@@ -1,0 +1,12 @@
+{{define "content"}}
+	{{range .tweets  }}
+		<div class="tweet" id="{{ .id }}">
+			<div class="right">
+				<a href="./user/{{ .user_id }}" class="author">@{{ .nick }}</a>
+				<img class="avatar" src="{{ .picture }}">
+			</div>
+			<div class="date" title="11/28/2022, 2:56:34 PM">{{ .timestamp }}</div>
+			<div class="message">{{ .message }}</div>
+		</div>
+	{{end}}
+{{end}}
