@@ -81,7 +81,7 @@ func Build(inception *inceptiondb.Client, staticsDir string) http.Handler {
 
 	beta := b.Resource("/beta")
 
-	t_home, err := t("home", "./statics/www/", "pages/template.gohtml", "pages/home.gohtml")
+	t_home, err := t("home", staticsDir, "pages/template.gohtml", "pages/home.gohtml")
 	if err != nil {
 		panic(err)
 	}
@@ -124,7 +124,7 @@ func Build(inception *inceptiondb.Client, staticsDir string) http.Handler {
 			}),
 		)
 
-	t_user, err := t("home", "./statics/www/", "pages/template.gohtml", "pages/user.gohtml")
+	t_user, err := t("home", staticsDir, "pages/template.gohtml", "pages/user.gohtml")
 	if err != nil {
 		panic(err)
 	}
