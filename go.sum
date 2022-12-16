@@ -1,3 +1,5 @@
+github.com/fulldump/biff v1.3.0 h1:FZDqvP8lkrCMDv/oNEH+j2unpuAY+8aXZ44GIvXYOx4=
+github.com/fulldump/biff v1.3.0/go.mod h1:TnBce9eRITmnv3otdmITKeU/zmC08DxotA9s0VcJELg=
 github.com/fulldump/box v0.2.0 h1:T1bflY0hHl0LGa56Cvj6+sLA4picyi/DpPJuwJJ1vII=
 github.com/fulldump/box v0.2.0/go.mod h1:WOwCbBxFaWl2BoWc04WOslZASB8+3vV3DRPJdRSR+/M=
 github.com/fulldump/goconfig v1.6.1 h1:3Xif582G08uAWfiLIYFLgdZ/H+lUu1kCgMaZdMM44WQ=

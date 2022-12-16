@@ -275,6 +275,58 @@ func (c *Client) Find(collection string, query FindQuery) (io.ReadCloser, error)
 	return nil, ErrorUnexpected
 }
 
+type PatchQuery struct {
+	Index   string `json:"index,omitempty"`
+	Skip    int    `json:"skip,omitempty"`
+	Limit   int    `json:"limit,omitempty"`
+	Filter  JSON   `json:"filter,omitempty"`
+	Reverse bool   `json:"reverse,omitempty"`
+	From    JSON   `json:"from,omitempty"`
+	To      JSON   `json:"to,omitempty"`
+	Value   string `json:"value"`
+	Patch   JSON   `json:"patch"`
+}
+
+func (c *Client) Patch(collection string, query PatchQuery) (io.ReadCloser, error) {
+
+	payload, err := json.Marshal(query)
+	if err != nil {
+		return nil, err // todo: wrap error
+	}
+
+	endpoint := c.config.Base + "/databases/" + url.PathEscape(c.config.DatabaseID) + "/collections/" + url.PathEscape(collection) + ":patch"
+
+	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Api-Key", c.config.ApiKey)
+	req.Header.Set("Api-Secret", c.config.ApiSecret)
+
+	resp, err := c.HttpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("persistence write error")
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		return resp.Body, nil
+	}
+
+	defer func() {
+		io.Copy(os.Stdout, resp.Body)
+		resp.Body.Close()
+	}()
+
+	if resp.StatusCode == http.StatusForbidden {
+		return nil, ErrorForbidden
+	}
+	if resp.StatusCode == http.StatusUnauthorized {
+		return nil, ErrorUnauthorized
+	}
+
+	return nil, ErrorUnexpected
+}
+
 func (c *Client) FindOne(collection string, query FindQuery, item interface{}) error {
 
 	query.Limit = 1
