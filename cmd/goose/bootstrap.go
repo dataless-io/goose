@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"goose/api"
 	"goose/inceptiondb"
+	"goose/streams"
 )
 
 func Bootstrap(c Config) (start, stop func() error) {
@@ -47,7 +49,42 @@ func Bootstrap(c Config) (start, stop func() error) {
 		}
 	}
 
-	a := api.Build(inception, c.Statics)
+	st := streams.NewStreams(inception)
+
+	{
+		err := st.Ensure("honk_create")
+		if err != nil {
+			panic("ensure stream 'honk_create':" + err.Error())
+		}
+	}
+
+	go func() {
+		err := st.Receive("honk_create", "insert_honk", func(data []byte) error {
+			tweet := api.Tweet{}
+			json.Unmarshal(data, &tweet)
+			return inception.Insert("honks", tweet)
+		})
+		if err != nil {
+			panic("stream receive 'honk_create'->'insert_honk':" + err.Error())
+		}
+	}()
+
+	go func() {
+		err := st.Receive("honk_create", "insert_user_honk", func(data []byte) error {
+			tweet := api.Tweet{}
+			json.Unmarshal(data, &tweet)
+			return inception.Insert("user_honks", api.JSON{
+				"user_id":   tweet.UserID,
+				"timestamp": tweet.Timestamp,
+				"honk":      tweet,
+			})
+		})
+		if err != nil {
+			panic("stream receive 'honk_create'->'insert_honk':" + err.Error())
+		}
+	}()
+
+	a := api.Build(inception, st, c.Statics)
 
 	s := &http.Server{
 		Addr:    c.Addr,
@@ -55,9 +92,16 @@ func Bootstrap(c Config) (start, stop func() error) {
 	}
 	fmt.Println("listening on ", s.Addr)
 
-	close := func() error {
+	start = func() error {
+		err := s.ListenAndServe()
+		st.Wait()
+		return err
+	}
+
+	stop = func() error {
+		st.Close()
 		return s.Shutdown(context.Background())
 	}
 
-	return s.ListenAndServe, close
+	return start, stop
 }

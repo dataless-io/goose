@@ -10,10 +10,12 @@ import (
 	"github.com/google/uuid"
 
 	"goose/glueauth"
+	"goose/inceptiondb"
 )
 
 type PublishInput struct {
-	Message string `json:"message"`
+	Message      string `json:"message"`
+	ParentHonkID string `json:"parent_honk_id"`
 }
 
 /*
@@ -44,21 +46,45 @@ func Publish(ctx context.Context, input *PublishInput) (interface{}, error) {
 		return nil, fmt.Errorf("minimum message length is %d chars", lmin)
 	}
 
+	// Check hook id
+	var parentTweet *Tweet
+	if input.ParentHonkID != "" {
+		query := inceptiondb.FindQuery{
+			Index: "by id",
+			Value: input.ParentHonkID,
+		}
+		err := GetInceptionClient(ctx).FindOne("tweets", query, &parentTweet)
+		if err != nil {
+			return nil, fmt.Errorf("parent_honk_id '%s' not found", input.ParentHonkID)
+		}
+	}
+
 	auth := glueauth.GetAuth(ctx)
 
 	tweet := Tweet{
-		ID:        uuid.New().String(),
-		Message:   input.Message,
-		Timestamp: time.Now().Unix(),
-		UserID:    auth.User.ID,
-		Nick:      auth.User.Nick,
-		Picture:   auth.User.Picture,
+		ID:          uuid.New().String(),
+		Message:     input.Message,
+		Timestamp:   time.Now().Unix(),
+		UserID:      auth.User.ID,
+		Nick:        auth.User.Nick,
+		Picture:     auth.User.Picture,
+		LinkedTweet: parentTweet,
 	}
 
-	err := GetInceptionClient(ctx).Insert("tweets", tweet)
-	if err != nil {
-		log.Println("Publish:", err.Error())
-		return nil, fmt.Errorf("persistence write error")
+	{
+		err := GetStreams(ctx).Send("honk_create", tweet)
+		if err != nil {
+			log.Println("Publish:", err.Error())
+			return nil, fmt.Errorf("persistence write error")
+		}
+	}
+
+	{
+		err := GetInceptionClient(ctx).Insert("tweets", tweet)
+		if err != nil {
+			log.Println("Publish:", err.Error())
+			return nil, fmt.Errorf("persistence write error")
+		}
 	}
 
 	return tweet, nil

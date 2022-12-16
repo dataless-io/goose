@@ -409,10 +409,10 @@
 
         function sendReply(honkId, message, f) {
             let body = {
-                honkId,
-                message,
+                parent_honk_id: honkId,
+                message: message,
             };
-            fetch('/v0/reply', {method:'POST', body:JSON.stringify(body), headers: {'X-Glue-Authentication':XAuthHeader}})
+            fetch('/v0/publish', {method:'POST', body:JSON.stringify(body), headers: {'X-Glue-Authentication':XAuthHeader}})
                 .then(resp => resp.json()).then(entry => {
 
                 if (entry.error) {

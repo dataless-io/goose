@@ -14,14 +14,16 @@ import (
 	"goose/glueauth"
 	"goose/inceptiondb"
 	"goose/statics"
+	"goose/streams"
 )
 
-func Build(inception *inceptiondb.Client, staticsDir string) http.Handler {
+func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string) http.Handler {
 
 	b := box.NewBox()
 
 	b.WithInterceptors(
 		InjectInceptionClient(inception),
+		InjectStreams(st),
 	)
 
 	b.WithInterceptors(PrettyErrorInterceptor)
