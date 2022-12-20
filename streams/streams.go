@@ -104,6 +104,7 @@ func (s *Streams) Send(name string, payload interface{}) error { // todo: json.R
 	return s.Inception.Insert(s.Prefix+"stream."+name, entry)
 }
 
+// TODO: rename to subscribe
 func (s *Streams) Receive(name string, flow string, callback func(data []byte) error) error {
 
 	s.wg.Add(1)
