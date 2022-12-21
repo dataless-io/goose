@@ -1,12 +1,19 @@
 {{define "content"}}
 	{{range .tweets  }}
-		<div class="tweet" id="{{ .id }}">
-			<div class="right">
-				<a href="./user/{{ .user_id }}" class="author">@{{ .nick }}</a>
-				<img class="avatar" src="{{ .picture }}">
-			</div>
-			<div class="date" title="11/28/2022, 2:56:34 PM">{{ .timestamp }}</div>
-			<div class="message">{{ .message }}</div>
-		</div>
+
+<article class="tweet" role="article" data-id="{{ .id }}">
+	<a class="avatar" rel="author" href="./user/{{ .user_id }}" tabindex="-1">
+		<img src="{{ .picture }}" alt="">
+	</a>
+	<div>
+		<a class="author" rel="author" href="./user/{{ .user_id }}">
+			<span class="nickname">{{ .nick }}</span>
+			<span class="username">@{{ .nick }}</span>
+		</a>
+		<time datetime="{{ printf "%.0f" .timestamp }}" title="2014-10-22 15:12:22" class="date" data-unix="{{ printf "%.0f" .timestamp }}"></time>
+	</div>
+	<div class="message">{{ .message }}</div>
+</article>
+
 	{{end}}
 {{end}}

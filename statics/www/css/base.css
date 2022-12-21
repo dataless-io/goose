@@ -1,0 +1,92 @@
+
+
+html {
+    font-family: sans-serif;
+}
+
+.auth {
+   float: right;
+}
+
+.auth .auth-picture {
+   border-radius: 50%;
+   height: 32px;
+   vertical-align: middle;
+}
+
+.auth .auth-nick {
+   font-weight: bold;
+   display: inline-block;
+   padding: 0 8px;
+}
+
+.tweet {
+    border: solid #F0F0F0 1px;
+    padding: 8px 16px;
+    padding-left: 90px;
+    overflow: hidden;
+}
+
+.tweet:hover {
+    /*background-color: #F8F8F8;*/
+    border-left-width: 6px;
+    padding-left: 85px;
+}
+
+.tweet .avatar img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    margin-left: -70px;
+    float: left;
+    background-color: #F8F8F8;
+}
+
+.tweet .author {
+    text-decoration: none;
+}
+
+.tweet .nickname {
+    color: black;
+    font-weight: bold;
+}
+
+.tweet .username {
+    color: gray;
+}
+
+.tweet .date {
+    color: gray;
+    font-size: 15px;
+}
+
+.tweet .date:before {
+    content: ' · ';
+}
+
+.tweet .message {
+    padding-top: 8px;
+    font-size: 15px;
+}
+
+.tweet footer.buttons {
+    padding-top: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.tweet footer.buttons .button {
+    background-color: transparent;
+    border: none;
+    padding: 4px 0;
+    width: 60px;
+    height: 36px;
+    flex-grow: 1;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.tweet footer.buttons .button:hover {
+    background-color: orange;
+}
