@@ -35,7 +35,10 @@ body {
 .tweet:hover {
     /*background-color: #F8F8F8;*/
     border-left-width: 6px;
+    border-left-color: #2196f3;
+    /*border-left-color: silver;*/
     padding-left: 85px;
+    transition: border-left-color 0.3s ease;
 }
 
 .tweet .avatar img {
