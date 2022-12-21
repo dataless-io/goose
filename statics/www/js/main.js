@@ -77,15 +77,15 @@ let user = {};
 let XAuthHeader = '';
 fetch('/auth/me').then(resp => {
     if (resp.status != 200) {
-        let login = document.createElement('a');
-        login.textContent = "Login";
-        login.href = '/auth/login';
-        id('auth').append(login);
-        throw 'user not logged in';
+        throw 'bad status code';
     }
-
     return resp.json();
 }).then(resp => {
+
+    if (resp.error) {
+        throw resp.error;
+    }
+
     let authDiv = id('auth');
 
     user = resp;
@@ -107,4 +107,8 @@ fetch('/auth/me').then(resp => {
     authDiv.append(logout);
 }).catch( reason => {
     console.log("AUTH:", reason);
+    let login = document.createElement('a');
+    login.textContent = "Login";
+    login.href = '/auth/login';
+    id('auth').append(login);
 });

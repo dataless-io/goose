@@ -4,8 +4,13 @@ html {
     font-family: sans-serif;
 }
 
+body {
+    margin: 0;
+}
+
 .auth {
-   float: right;
+    float: right;
+    padding: 8px;
 }
 
 .auth .auth-picture {
