@@ -16,6 +16,11 @@ Golang is required. Just run:
 make run
 ```
 
+Or to develop the frontend:
+```shell
+HTTPADDR=:8080 STATICS=./statics/www/ make run
+```
+
 ## Contribute
 
 Feel free to contribute, you can improve the interface, API, the stream algorithm...

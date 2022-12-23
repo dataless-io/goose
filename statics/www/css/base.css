@@ -8,9 +8,36 @@ body {
     margin: 0;
 }
 
+.rounded-button {
+    background-color: #f57f56;
+    padding: 8px 32px;
+    border-radius: 20px;
+    color: white;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    text-decoration: none;
+}
+
+.rounded-button:hover {
+    background-color: #e16c45;
+}
+
+.rounded-button-outlined {
+    color: #f57f56;
+    border: solid 1px #f57f56;
+    background-color: white;
+}
+
+.rounded-button-outlined:hover {
+    background-color: #F4F4F4;
+}
+
+
 .auth {
     float: right;
-    padding: 8px;
+    padding: 12px 8px;
 }
 
 .auth .auth-picture {

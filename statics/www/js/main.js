@@ -76,7 +76,7 @@ document.querySelectorAll("article.tweet").forEach(item => {
 let user = {};
 let XAuthHeader = '';
 const avatar = document.createElement('img');
-
+avatar.setAttribute('src', '/avatar.png');
 fetch('/auth/me').then(resp => {
     if (resp.status != 200) {
         throw 'bad status code';
@@ -106,12 +106,15 @@ fetch('/auth/me').then(resp => {
     authDiv.append(nick);
 
     let logout = document.createElement('a');
+    logout.classList.add('rounded-button');
+    logout.classList.add('rounded-button-outlined');
     logout.textContent = "Logout";
     logout.href = '/auth/logout';
     authDiv.append(logout);
 }).catch( reason => {
     console.log("AUTH:", reason);
     let login = document.createElement('a');
+    login.classList.add('rounded-button');
     login.textContent = "Login";
     login.href = '/auth/login';
     id('auth').append(login);
@@ -189,6 +192,13 @@ function sendHonk(f, message, parentHonkId) {
 
     text_input.addEventListener('keyup', update_counter, true);
     publish_button.addEventListener('click', function() {
+
+        if (!user.id) {
+            // todo: save text_input.value somwhere
+            window.location.href = '/auth/login';
+            return;
+        }
+
         sendHonk(function (honk) {
             console.log({honk});
             text_input.value = '';
