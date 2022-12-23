@@ -25,6 +25,63 @@ body {
    padding: 0 8px;
 }
 
+#publish {
+    padding: 8px;
+    border: solid #F0F0F0 1px;
+    padding-left: 90px;
+}
+
+#publish:hover {
+    background-color: #F4F4F4;
+}
+
+#publish textarea {
+    width: 100%;
+    border: solid #F0F0F0 1px;
+    box-sizing: border-box;
+    outline: none;
+    resize: vertical;
+    font-size: 20px;
+    font-family: sans-serif;
+}
+
+#publish .buttons {
+    text-align: right;
+}
+
+#publish .buttons .counter {
+    /*float: left;*/
+    padding: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: gray;
+}
+
+#publish .buttons .counter.red {
+    color: red;
+}
+
+#publish .buttons button {
+    background-color: #f57f56;
+    padding: 8px 32px;
+    border-radius: 20px;
+    color: white;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#publish .buttons button:hover {
+    background-color: #e16c45;
+}
+
+#publish .buttons button[disabled] {
+    background-color: #e5ae96;
+}
+
+
+
 .tweet {
     border: solid #F0F0F0 1px;
     padding: 8px 16px;
@@ -41,7 +98,8 @@ body {
     transition: border-left-color 0.3s ease;
 }
 
-.tweet .avatar img {
+.tweet .avatar img,
+#publish .avatar {
     width: 56px;
     height: 56px;
     border-radius: 50%;
