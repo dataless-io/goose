@@ -81,7 +81,7 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 		}),
 	)
 
-	beta := b.Resource("/beta")
+	beta := b
 
 	t_home, err := t("home", staticsDir, "pages/template.gohtml", "pages/home.gohtml")
 	if err != nil {

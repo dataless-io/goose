@@ -183,3 +183,26 @@ body {
 .tweet footer.buttons .button:hover {
     background-color: orange;
 }
+
+.footer {
+    font-size: 80%;
+    color: silver;
+    text-align: center;
+    padding: 1rem 0;
+    margin: 1rem 0;
+    border-top: solid silver 1px;
+    line-height: 20px;
+}
+.footer a {
+    color: gray;
+    text-decoration: none;
+}
+.footer a:hover {
+    color: dodgerblue;
+}
+.footer a svg {
+    fill: gray;
+}
+.footer a:hover svg {
+    fill: dodgerblue;
+}
