@@ -146,7 +146,6 @@ function sendHonk(f, message, parentHonkId) {
 
     // avatar is created in global scope
     avatar.classList.add('avatar');
-    avatar.src = user.picture;
     publish_dom.appendChild(avatar);
 
     const text_input = document.createElement('textarea');
