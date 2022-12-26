@@ -200,50 +200,68 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 		panic(err)
 	}
 
-	beta.Resource("/user/{user-id}").
-		WithActions(
+	beta.Resource("/user/{user-id}"). // todo: rename to user-handle
+						WithActions(
 			box.Get(func(ctx context.Context, w http.ResponseWriter) {
 
-				userId := box.GetUrlParameter(ctx, "user-id")
+				userHandle := box.GetUrlParameter(ctx, "user-id")
 
-				reader, err := GetInceptionClient(ctx).Find("tweets", inceptiondb.FindQuery{
-					Index: "by user-timestamp-id",
+				user := struct {
+					ID string `json:"id"`
+				}{}
+				findErr := inception.FindOne("users", inceptiondb.FindQuery{
+					Index: "by handle",
+					Value: userHandle,
+				}, &user)
+				if findErr == io.EOF {
+					// todo: return page "user not found 404"
+					// todo: return
+				}
+				if findErr != nil {
+					// todo: return page "something went wrong"
+					// todo: return
+				}
+
+				reader, err := GetInceptionClient(ctx).Find("user_honks", inceptiondb.FindQuery{
+					Index: "by user-timestamp",
 					Skip:  0,
 					Limit: 100,
 					From: JSON{
 						"id":        "",
 						"timestamp": 99999999999999,
-						"user_id":   userId,
+						"user_id":   user.ID,
 					},
 					To: JSON{
 						"id":        "",
 						"timestamp": 0,
-						"user_id":   userId,
+						"user_id":   user.ID,
 					},
 				})
 				if err != nil {
 					err = fmt.Errorf("error reading from persistence layer")
 				}
 
-				tweets := []JSON{}
+				honks := []JSON{}
 
 				j := json.NewDecoder(reader)
 				for {
-					tweet := JSON{}
-					err := j.Decode(&tweet)
+					item := struct {
+						Honk JSON `json:"honk"`
+					}{}
+					err := j.Decode(&item)
 					if err == io.EOF {
 						break
 					}
 					if err != nil {
 						err = fmt.Errorf("error decoding %w", err)
 					}
-					tweets = append(tweets, tweet)
+					honks = append(honks, item.Honk)
 				}
 
 				t_user.Execute(w, map[string]interface{}{
 					"title":  "Home page",
-					"name":   userId,
-					"tweets": tweets,
+					"name":   userHandle,
+					"tweets": honks,
 				})
 
 			}),

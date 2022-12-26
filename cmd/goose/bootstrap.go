@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"regexp"
+	"strings"
 
 	"goose/api"
 	"goose/inceptiondb"
@@ -70,6 +73,17 @@ func Bootstrap(c Config) (start, stop func() error) {
 			panic("ensure index 'by id' on tweets: " + err.Error())
 		}
 	}
+	{
+		err := inception.EnsureIndex("user_honks", &inceptiondb.IndexOptions{
+			Name:   "by user-timestamp",
+			Type:   "btree",
+			Fields: []string{"user_id", "-timestamp"},
+			Sparse: true,
+		})
+		if err != nil {
+			panic("ensure index 'by user-timestamp' on user_honks: " + err.Error())
+		}
+	}
 
 	st := streams.NewStreams(inception)
 
@@ -93,16 +107,50 @@ func Bootstrap(c Config) (start, stop func() error) {
 
 	go func() {
 		err := st.Receive("honk_create", "insert_user_honk", func(data []byte) error {
-			tweet := api.Tweet{}
-			json.Unmarshal(data, &tweet)
+			honk := api.Tweet{}
+			json.Unmarshal(data, &honk)
 			return inception.Insert("user_honks", api.JSON{
-				"user_id":   tweet.UserID,
-				"timestamp": tweet.Timestamp,
-				"honk":      tweet,
+				"user_id":   honk.UserID,
+				"timestamp": honk.Timestamp,
+				"honk":      honk,
 			})
 		})
 		if err != nil {
 			panic("stream receive 'honk_create'->'insert_honk':" + err.Error())
+		}
+	}()
+
+	go func() {
+		err := st.Receive("honk_create", "mention", func(data []byte) error {
+			honk := api.Tweet{}
+			json.Unmarshal(data, &honk)
+
+			mentions := findMentions(honk.Message)
+			for _, mention := range mentions {
+				user := struct {
+					ID string `json:"id"`
+				}{}
+				findErr := inception.FindOne("users", inceptiondb.FindQuery{
+					Index: "by handle",
+					Value: mention,
+				}, &user)
+				if findErr != nil {
+					continue
+				}
+				insertErr := inception.Insert("user_honks", api.JSON{
+					"user_id":   user.ID,
+					"timestamp": honk.Timestamp,
+					"honk":      honk,
+				})
+				if insertErr != nil {
+					log.Println("ERROR: mention:", user.ID, insertErr.Error())
+				}
+			}
+
+			return nil
+		})
+		if err != nil {
+			panic("stream receive 'honk_create'->'mention':" + err.Error())
 		}
 	}()
 
@@ -126,4 +174,44 @@ func Bootstrap(c Config) (start, stop func() error) {
 	}
 
 	return start, stop
+}
+
+// TODO: move this to a proper package
+func normalizeHandle(a string) string {
+	a = strings.TrimPrefix(a, "@")
+	a = strings.ToLower(a)
+	return a
+}
+
+// TODO: move this to a proper package
+func unique(items []string) []string {
+
+	m := map[string]bool{}
+	for _, item := range items {
+		m[item] = true
+	}
+
+	result := make([]string, len(m))
+	i := 0
+	for v := range m {
+		result[i] = v
+		i++
+	}
+
+	return result
+}
+
+// TODO: move this to a proper package
+var findMentionRegex = regexp.MustCompile(`@[a-zA-Z0-9]+`)
+
+func findMentions(message string) []string {
+	mentions := findMentionRegex.FindAllString(message, -1)
+
+	// normalize
+	for i, mention := range mentions {
+		mentions[i] = normalizeHandle(mention)
+	}
+
+	// unique
+	return unique(mentions)
 }

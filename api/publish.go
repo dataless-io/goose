@@ -28,7 +28,7 @@ type Tweet struct {
 	Message     string `json:"message"`
 	Timestamp   int64  `json:"timestamp"`
 	UserID      string `json:"user_id"`
-	Nick        string `json:"nick"`
+	Nick        string `json:"nick"` // todo: handle instead (or add handle)
 	Picture     string `json:"picture"`
 	LinkedTweet *Tweet `json:"linked_tweet,omitempty"`
 }

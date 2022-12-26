@@ -5,11 +5,11 @@
 	{{range .tweets  }}
 
 <article class="tweet" role="article" data-id="{{ .id }}">
-	<a class="avatar" rel="author" href="./user/{{ .user_id }}" tabindex="-1">
+	<a class="avatar" rel="author" href="/user/{{ .nick }}" tabindex="-1">
 		<img src="{{ .picture }}" alt="">
 	</a>
 	<div>
-		<a class="author" rel="author" href="./user/{{ .user_id }}">
+		<a class="author" rel="author" href="/user/{{ .nick }}">
 			<span class="nickname">{{ .nick }}</span>
 			<span class="username">@{{ .nick }}</span>
 		</a>
