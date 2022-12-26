@@ -276,7 +276,10 @@ func ensureUser(next box.H) box.H {
 		}{}
 
 		inception := GetInceptionClient(ctx)
-		err := inception.FindOne("users", inceptiondb.FindQuery{}, &user)
+		err := inception.FindOne("users", inceptiondb.FindQuery{
+			Index: "by id",
+			Value: auth.User.ID,
+		}, &user)
 		if err == io.EOF {
 			user.ID = auth.User.ID
 			user.Handle = auth.User.Nick // todo: conflict with handler?
