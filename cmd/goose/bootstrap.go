@@ -206,7 +206,7 @@ func unique(items []string) []string {
 }
 
 // TODO: move this to a proper package
-var findMentionRegex = regexp.MustCompile(`@[a-zA-Z0-9]+`)
+var findMentionRegex = regexp.MustCompile(`@[a-zA-Z0-9_]+`)
 
 func findMentions(message string) []string {
 	mentions := findMentionRegex.FindAllString(message, -1)
