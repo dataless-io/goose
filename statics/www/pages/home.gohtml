@@ -1,9 +1,8 @@
 {{define "content"}}
 
-	<div id="publish"></div>
+<div id="publish"></div>
 
 	{{range .tweets  }}
-
 <article class="tweet" role="article" data-id="{{ .id }}">
 	<a class="avatar" rel="author" href="/user/{{ .nick }}" tabindex="-1">
 		<img src="{{ .picture }}" alt="">
@@ -13,10 +12,11 @@
 			<span class="nickname">{{ .nick }}</span>
 			<span class="username">@{{ .nick }}</span>
 		</a>
-		<time datetime="{{ printf "%.0f" .timestamp }}" title="2014-10-22 15:12:22" class="date" data-unix="{{ printf "%.0f" .timestamp }}"></time>
+		<a class="date" href="/user/{{ .nick }}/honk/{{ .id }}">
+			<time datetime="{{ printf "%.0f" .timestamp }}" title="2014-10-22 15:12:22" data-unix="{{ printf "%.0f" .timestamp }}"></time>
+		</a>
 	</div>
 	<div class="message">{{ .message }}</div>
 </article>
-
 	{{end}}
 {{end}}

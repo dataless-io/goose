@@ -215,8 +215,9 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 		panic(err)
 	}
 
-	beta.Resource("/user/{user-id}"). // todo: rename to user-handle
-						WithActions(
+	// todo: rename to user-handle:
+	beta.Resource("/user/{user-id}").
+		WithActions(
 			box.Get(func(ctx context.Context, w http.ResponseWriter) {
 
 				userHandle := box.GetUrlParameter(ctx, "user-id")
@@ -282,6 +283,45 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 					"name":   userHandle,
 					"avatar": user.Picture,
 					"tweets": honks,
+				})
+
+			}),
+		)
+
+	t_article, err := t("article", staticsDir, "pages/template.gohtml", "pages/article.gohtml")
+	if err != nil {
+		panic(err)
+	}
+
+	// todo: rename to user-handle:
+	beta.Resource("/user/{user-id}/honk/{honk-id}").
+		WithActions(
+			box.Get(func(ctx context.Context, w http.ResponseWriter) {
+
+				userHandle := box.GetUrlParameter(ctx, "user-id")
+				honkId := box.GetUrlParameter(ctx, "honk-id")
+
+				var honk Tweet
+				findErr := inception.FindOne("honks", inceptiondb.FindQuery{
+					Index: "by id",
+					Value: honkId,
+				}, &honk)
+				if findErr != nil {
+					// todo: render a pretty and user friendly error page
+					w.WriteHeader(http.StatusNotFound)
+					return
+				}
+
+				if honk.Nick != userHandle {
+					// todo: render a pretty and user friendly error page
+					w.WriteHeader(http.StatusNotFound)
+					return
+				}
+
+				t_article.Execute(w, map[string]interface{}{
+					"title": "Honk page",
+					"name":  userHandle,
+					"honk":  honk,
 				})
 
 			}),

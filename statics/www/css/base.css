@@ -34,7 +34,6 @@ body {
     background-color: #F4F4F4;
 }
 
-
 .auth {
     float: right;
     padding: 12px 8px;
@@ -50,6 +49,17 @@ body {
    font-weight: bold;
    display: inline-block;
    padding: 0 8px;
+}
+
+#loggoose {
+    text-align: center;
+    display: block;
+    text-decoration: none;
+    color: black;
+}
+
+#loggoose:hover {
+    color: #2196f3;
 }
 
 #publish {
@@ -140,6 +150,10 @@ body {
     text-decoration: none;
 }
 
+.tweet .author:hover {
+    text-decoration: underline;
+}
+
 .tweet .nickname {
     color: black;
     font-weight: bold;
@@ -152,6 +166,12 @@ body {
 .tweet .date {
     color: gray;
     font-size: 15px;
+    text-decoration: none;
+}
+
+.tweet .date:hover {
+    color: black;
+    text-decoration: underline;
 }
 
 .tweet .date:before {

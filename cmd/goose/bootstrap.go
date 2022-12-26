@@ -84,6 +84,16 @@ func Bootstrap(c Config) (start, stop func() error) {
 			panic("ensure index 'by user-timestamp' on user_honks: " + err.Error())
 		}
 	}
+	{
+		err := inception.EnsureIndex("honks", &inceptiondb.IndexOptions{
+			Name:  "by id",
+			Type:  "map",
+			Field: "id",
+		})
+		if err != nil {
+			panic("ensure index 'by user-timestamp' on user_honks: " + err.Error())
+		}
+	}
 
 	st := streams.NewStreams(inception)
 

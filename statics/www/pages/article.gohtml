@@ -1,0 +1,15 @@
+{{define "content"}}
+    <article class="tweet" role="article" data-id="{{ .honk.ID }}">
+        <a class="avatar" rel="author" href="/user/{{ .honk.Nick }}" tabindex="-1">
+            <img src="{{ .honk.Picture }}" alt="">
+        </a>
+        <div>
+            <a class="author" rel="author" href="/user/{{ .honk.Nick }}">
+                <span class="nickname">{{ .honk.Nick }}</span>
+                <span class="username">@{{ .honk.Nick }}</span>
+            </a>
+            <time datetime="{{ printf "%d" .honk.Timestamp }}" title="2014-10-22 15:12:22" class="date" data-unix="{{ printf "%d" .honk.Timestamp }}"></time>
+        </div>
+        <div class="message">{{ .honk.Message }}</div>
+    </article>
+{{end}}

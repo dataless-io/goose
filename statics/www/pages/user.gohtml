@@ -1,10 +1,14 @@
 {{define "content"}}
 
-    <div style="background-color: #19a9e9; height: 120px;"></div>
-    <div style="color: white; height: 0; font-size: 220%; font-weight: bold; padding-top: -20px; padding-left: 20px; position: relative; top: -48px;">
-        <img src="{{ .avatar }}" style="border-radius: 50%; vertical-align: middle; width: 96px; height: 96px;"> {{ .name }}
+    <div style="background-image: url('{{ .avatar }}'); background-position: center center;
+            background-repeat: no-repeat;
+            background-size: cover;">
+        <div style="backdrop-filter: blur(10px); height: 120px;"></div>
+        <div style="color: white; height: 0; font-size: 220%; font-weight: bold; padding-top: -20px; padding-left: 20px; position: relative; z-index: 1; top: -48px;">
+            <img src="{{ .avatar }}" style="border-style: solid; border-width: 4px; border-color: rgba(0,0,0,0.3); border-radius: 50%; vertical-align: bottom; width: 96px; height: 96px;"> {{ .name }}
+        </div>
+        <div style="backdrop-filter: blur(10px); background-color: rgba(0,0,0,0.3); height: 60px;"></div>
     </div>
-    <div style="background-color: deepskyblue; height: 60px;"></div>
 
     {{range .tweets  }}
         <article class="tweet" role="article" data-id="{{ .id }}">
@@ -16,7 +20,9 @@
                     <span class="nickname">{{ .nick }}</span>
                     <span class="username">@{{ .nick }}</span>
                 </a>
-                <time datetime="{{ printf "%.0f" .timestamp }}" title="2014-10-22 15:12:22" class="date" data-unix="{{ printf "%.0f" .timestamp }}"></time>
+                <a class="date" href="/user/{{ .nick }}/honk/{{ .id }}">
+                    <time datetime="{{ printf "%.0f" .timestamp }}" title="2014-10-22 15:12:22" data-unix="{{ printf "%.0f" .timestamp }}"></time>
+                </a>
             </div>
             <div class="message">{{ .message }}</div>
         </article>
