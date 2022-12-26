@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/fulldump/box"
 
@@ -122,6 +123,71 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 					"name":   "Fulanezxxx",
 					"tweets": tweets,
 				})
+
+			}),
+		)
+
+	beta.Resource("/sitemap.xml").
+		WithActions(
+			box.Get(func(ctx context.Context, w http.ResponseWriter) {
+
+				// todo: this is a naive implementation
+				// todo: - url host is hardcoded
+				// todo: - xml should be valid (generated properly with some unmarshal/serializer)
+				// todo: - loc should be a valid url (escape properly)
+
+				max := 1000
+				reader, err := GetInceptionClient(ctx).Find("tweets", inceptiondb.FindQuery{
+					Index:   "by timestamp-id",
+					Limit:   max,
+					Reverse: true,
+				})
+				if err != nil {
+					err = fmt.Errorf("error reading from persistence layer")
+				}
+
+				userIDs := map[string]int64{}
+
+				j := json.NewDecoder(reader)
+				for {
+					honk := struct {
+						UserID    string `json:"user_id"`
+						Timestamp int64  `json:"timestamp"`
+					}{}
+					err := j.Decode(&honk)
+					if err == io.EOF {
+						break
+					}
+					if err != nil {
+						err = fmt.Errorf("error decoding %w", err)
+					}
+
+					if _, exists := userIDs[honk.UserID]; !exists {
+						userIDs[honk.UserID] = honk.Timestamp
+					}
+
+				}
+
+				w.Header().Set("content-type", "text/xml; charset=UTF-8")
+
+				w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.google.com/schemas/sitemap/0.9">
+`))
+
+				for userID, timestamp_unix := range userIDs {
+
+					timestamp := time.Unix(timestamp_unix, 0)
+
+					w.Write([]byte(`    <url>
+        <loc>https://goose.blue/user/` + userID + `</loc>
+        <lastmod>` + timestamp.Format("2006-01-02") + `</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+`))
+				}
+
+				w.Write([]byte(`</urlset>`))
 
 			}),
 		)
