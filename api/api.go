@@ -151,10 +151,13 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 
 				userIDs := map[string]int64{}
 
+				latestTimestamp := int64(0)
+
 				j := json.NewDecoder(reader)
 				for {
 					honk := struct {
 						UserID    string `json:"user_id"`
+						Nick      string `json:"nick"`
 						Timestamp int64  `json:"timestamp"`
 					}{}
 					err := j.Decode(&honk)
@@ -165,8 +168,12 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 						err = fmt.Errorf("error decoding %w", err)
 					}
 
-					if _, exists := userIDs[honk.UserID]; !exists {
-						userIDs[honk.UserID] = honk.Timestamp
+					if honk.Timestamp > latestTimestamp {
+						latestTimestamp = honk.Timestamp
+					}
+
+					if _, exists := userIDs[honk.Nick]; !exists {
+						userIDs[honk.Nick] = honk.Timestamp
 					}
 
 				}
@@ -175,6 +182,14 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 
 				w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.google.com/schemas/sitemap/0.9">
+`))
+
+				w.Write([]byte(`    <url>
+        <loc>https://goose.blue/</loc>
+        <lastmod>` + time.Unix(latestTimestamp, 0).Format("2006-01-02") + `</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
 `))
 
 				for userID, timestamp_unix := range userIDs {
