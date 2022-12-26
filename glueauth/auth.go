@@ -24,6 +24,31 @@ type GlueAuthentication struct {
 
 var ErrUnauthorized = errors.New("unauthorized")
 
+func Auth(next box.H) box.H {
+	return func(ctx context.Context) {
+
+		defer func() {
+			next(ctx)
+		}()
+
+		d := box.GetRequest(ctx).Header.Get(XGlueAuthentication)
+
+		if d == "" {
+			return
+		}
+
+		a := &GlueAuthentication{}
+
+		err := json.Unmarshal([]byte(d), &a)
+		if err != nil {
+			return
+		}
+
+		ctx = SetAuth(ctx, a)
+
+	}
+}
+
 func Require(next box.H) box.H {
 	return func(ctx context.Context) {
 
@@ -56,5 +81,8 @@ func SetAuth(ctx context.Context, a *GlueAuthentication) context.Context {
 
 func GetAuth(ctx context.Context) *GlueAuthentication {
 	v := ctx.Value(key)
+	if v == nil {
+		return nil
+	}
 	return v.(*GlueAuthentication)
 }

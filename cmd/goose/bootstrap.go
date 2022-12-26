@@ -16,6 +16,28 @@ func Bootstrap(c Config) (start, stop func() error) {
 	inception := inceptiondb.NewClient(c.Inception)
 
 	{
+		err := inception.EnsureIndex("users", &inceptiondb.IndexOptions{
+			Name:   "by id",
+			Type:   "map",
+			Field:  "id",
+			Sparse: false,
+		})
+		if err != nil {
+			panic("ensure index 'by id' on users: " + err.Error())
+		}
+	}
+	{
+		err := inception.EnsureIndex("users", &inceptiondb.IndexOptions{
+			Name:   "by handle",
+			Type:   "map",
+			Field:  "handle",
+			Sparse: false,
+		})
+		if err != nil {
+			panic("ensure index 'by handle' on users: " + err.Error())
+		}
+	}
+	{
 		err := inception.EnsureIndex("tweets", &inceptiondb.IndexOptions{
 			Name:   "by timestamp-id",
 			Type:   "btree",

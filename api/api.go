@@ -25,6 +25,7 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 	b.WithInterceptors(
 		InjectInceptionClient(inception),
 		InjectStreams(st),
+		glueauth.Auth,
 	)
 
 	b.WithInterceptors(PrettyErrorInterceptor)
@@ -45,6 +46,7 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 		glueauth.Require,
 	)
 
+	// todo: deprecate
 	v0.Resource("/reply").WithActions(
 		box.Post(Reply),
 	).WithInterceptors(
@@ -90,6 +92,7 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 	}
 
 	beta.Resource("/").
+		WithInterceptors(ensureUser).
 		WithActions(
 			box.Get(func(ctx context.Context, w http.ResponseWriter) {
 
@@ -253,6 +256,42 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 		)
 
 	return b
+}
+
+func ensureUser(next box.H) box.H {
+	return func(ctx context.Context) {
+
+		next(ctx)
+
+		auth := glueauth.GetAuth(ctx)
+		if auth == nil {
+			return
+		}
+
+		user := struct {
+			ID      string `json:"id"`
+			Handle  string `json:"handle"`
+			Nick    string `json:"nick"`
+			Picture string `json:"picture"`
+		}{}
+
+		inception := GetInceptionClient(ctx)
+		err := inception.FindOne("users", inceptiondb.FindQuery{}, &user)
+		if err == io.EOF {
+			user.ID = auth.User.ID
+			user.Handle = auth.User.Nick // todo: conflict with handler?
+			user.Nick = auth.User.Nick
+			user.Picture = auth.User.Picture
+			insertErr := inception.Insert("users", user)
+			if insertErr != nil {
+				fmt.Println("ERROR: insert user:", err.Error())
+			}
+			return
+		}
+		if err != nil {
+			fmt.Println("ERROR: find user:", err.Error())
+		}
+	}
 }
 
 type JSON = map[string]interface{}
