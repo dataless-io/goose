@@ -153,13 +153,11 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 
 				latestTimestamp := int64(0)
 
+				honks := []*Tweet{}
+
 				j := json.NewDecoder(reader)
 				for {
-					honk := struct {
-						UserID    string `json:"user_id"`
-						Nick      string `json:"nick"`
-						Timestamp int64  `json:"timestamp"`
-					}{}
+					honk := &Tweet{}
 					err := j.Decode(&honk)
 					if err == io.EOF {
 						break
@@ -167,6 +165,8 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 					if err != nil {
 						err = fmt.Errorf("error decoding %w", err)
 					}
+
+					honks = append(honks, honk)
 
 					if honk.Timestamp > latestTimestamp {
 						latestTimestamp = honk.Timestamp
@@ -180,10 +180,12 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 
 				w.Header().Set("content-type", "text/xml; charset=UTF-8")
 
+				// Begin XML
 				w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.google.com/schemas/sitemap/0.9">
 `))
 
+				// Mainstream
 				w.Write([]byte(`    <url>
         <loc>https://goose.blue/</loc>
         <lastmod>` + time.Unix(latestTimestamp, 0).Format("2006-01-02") + `</lastmod>
@@ -192,6 +194,7 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
     </url>
 `))
 
+				// User pages
 				for userID, timestamp_unix := range userIDs {
 
 					timestamp := time.Unix(timestamp_unix, 0)
@@ -205,6 +208,19 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 `))
 				}
 
+				// Tweet pages
+				for _, honk := range honks {
+					w.Write([]byte(`    <url>
+        <loc>https://goose.blue/user/` + honk.Nick + `/honk/` + honk.ID + `</loc>
+        <lastmod>` + time.Unix(honk.Timestamp, 0).Format("2006-01-02") + `</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.6</priority>
+    </url>
+`))
+
+				}
+
+				// End XML
 				w.Write([]byte(`</urlset>`))
 
 			}),
