@@ -222,8 +222,12 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 				userHandle := box.GetUrlParameter(ctx, "user-id")
 
 				user := struct {
-					ID string `json:"id"`
-				}{}
+					ID      string `json:"id"`
+					Picture string `json:"picture"`
+				}{
+					Picture: "/avatar.png",
+				}
+
 				findErr := inception.FindOne("users", inceptiondb.FindQuery{
 					Index: "by handle",
 					Value: userHandle,
@@ -276,6 +280,7 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 				t_user.Execute(w, map[string]interface{}{
 					"title":  "Home page",
 					"name":   userHandle,
+					"avatar": user.Picture,
 					"tweets": honks,
 				})
 

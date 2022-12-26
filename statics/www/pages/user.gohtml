@@ -1,7 +1,9 @@
 {{define "content"}}
 
     <div style="background-color: #19a9e9; height: 120px;"></div>
-    <div style="color: white; height: 0; font-size: 220%; font-weight: bold; padding-top: -20px; padding-left: 20px; position: relative; top: -23px;">{{ .name }}</div>
+    <div style="color: white; height: 0; font-size: 220%; font-weight: bold; padding-top: -20px; padding-left: 20px; position: relative; top: -48px;">
+        <img src="{{ .avatar }}" style="border-radius: 50%; vertical-align: middle; width: 96px; height: 96px;"> {{ .name }}
+    </div>
     <div style="background-color: deepskyblue; height: 60px;"></div>
 
     {{range .tweets  }}

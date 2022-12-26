@@ -109,11 +109,15 @@ func Bootstrap(c Config) (start, stop func() error) {
 		err := st.Receive("honk_create", "insert_user_honk", func(data []byte) error {
 			honk := api.Tweet{}
 			json.Unmarshal(data, &honk)
-			return inception.Insert("user_honks", api.JSON{
+			insertErr := inception.Insert("user_honks", api.JSON{
 				"user_id":   honk.UserID,
 				"timestamp": honk.Timestamp,
 				"honk":      honk,
 			})
+			if insertErr != nil {
+				log.Println("ERROR: mention:", honk.UserID, insertErr.Error())
+			}
+			return nil
 		})
 		if err != nil {
 			panic("stream receive 'honk_create'->'insert_honk':" + err.Error())
