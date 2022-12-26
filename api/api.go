@@ -139,43 +139,62 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 				// todo: - xml should be valid (generated properly with some unmarshal/serializer)
 				// todo: - loc should be a valid url (escape properly)
 
-				max := 1000
-				reader, err := GetInceptionClient(ctx).Find("tweets", inceptiondb.FindQuery{
-					Index:   "by timestamp-id",
-					Limit:   max,
-					Reverse: true,
-				})
-				if err != nil {
-					err = fmt.Errorf("error reading from persistence layer")
+				honks := []*Tweet{}
+				{
+					max := 1000
+					reader, err := GetInceptionClient(ctx).Find("honks", inceptiondb.FindQuery{
+						Limit: max,
+					})
+					if err != nil {
+						err = fmt.Errorf("error reading from persistence layer")
+					}
+					j := json.NewDecoder(reader)
+					for {
+						honk := &Tweet{}
+						err := j.Decode(&honk)
+						if err == io.EOF {
+							break
+						}
+						if err != nil {
+							err = fmt.Errorf("error decoding %w", err)
+						}
+						honks = append(honks, honk)
+					}
 				}
 
 				userIDs := map[string]int64{}
-
 				latestTimestamp := int64(0)
 
-				honks := []*Tweet{}
-
-				j := json.NewDecoder(reader)
-				for {
-					honk := &Tweet{}
-					err := j.Decode(&honk)
-					if err == io.EOF {
-						break
-					}
+				{
+					max := 1000
+					reader, err := GetInceptionClient(ctx).Find("tweets", inceptiondb.FindQuery{
+						Index:   "by timestamp-id",
+						Limit:   max,
+						Reverse: true,
+					})
 					if err != nil {
-						err = fmt.Errorf("error decoding %w", err)
+						err = fmt.Errorf("error reading from persistence layer")
 					}
 
-					honks = append(honks, honk)
+					j := json.NewDecoder(reader)
+					for {
+						honk := &Tweet{}
+						err := j.Decode(&honk)
+						if err == io.EOF {
+							break
+						}
+						if err != nil {
+							err = fmt.Errorf("error decoding %w", err)
+						}
 
-					if honk.Timestamp > latestTimestamp {
-						latestTimestamp = honk.Timestamp
+						if honk.Timestamp > latestTimestamp {
+							latestTimestamp = honk.Timestamp
+						}
+
+						if _, exists := userIDs[honk.Nick]; !exists {
+							userIDs[honk.Nick] = honk.Timestamp
+						}
 					}
-
-					if _, exists := userIDs[honk.Nick]; !exists {
-						userIDs[honk.Nick] = honk.Timestamp
-					}
-
 				}
 
 				w.Header().Set("content-type", "text/xml; charset=UTF-8")
