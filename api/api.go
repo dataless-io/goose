@@ -99,7 +99,7 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 
 				w.Header().Set(`Link`, `<https://goose.blue/>; rel="canonical"`)
 
-				max := 100
+				max := 20
 				reader, err := GetInceptionClient(ctx).Find("tweets", inceptiondb.FindQuery{
 					Index:   "by timestamp-id",
 					Limit:   max,
@@ -285,7 +285,7 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 				reader, err := GetInceptionClient(ctx).Find("user_honks", inceptiondb.FindQuery{
 					Index: "by user-timestamp",
 					Skip:  0,
-					Limit: 100,
+					Limit: 20,
 					From: JSON{
 						"id":        "",
 						"timestamp": 99999999999999,
