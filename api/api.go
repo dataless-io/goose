@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/fulldump/box"
@@ -125,9 +126,9 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 				}
 
 				t_home.Execute(w, map[string]interface{}{
-					"title":  "Home page",
-					"name":   "Fulanezxxx",
-					"tweets": tweets,
+					"title":       "Goose - La red social libre",
+					"description": "Goose, la red social realmente libre con el código fuente disponible en github.com/dataless-io/goose hasta que el dinero o la ley digan lo contrario, ¡Aprovéchala!",
+					"tweets":      tweets,
 				})
 
 			}),
@@ -318,11 +319,17 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 					honks = append(honks, item.Honk)
 				}
 
+				description := "@" + userHandle
+				if len(honks) > 0 {
+					description += ": " + honks[0]["message"].(string)
+				}
+
 				t_user.Execute(w, map[string]interface{}{
-					"title":  "Home page",
-					"name":   userHandle,
-					"avatar": user.Picture,
-					"tweets": honks,
+					"title":       "Goose @" + userHandle,
+					"description": description,
+					"name":        userHandle,
+					"avatar":      user.Picture,
+					"tweets":      honks,
 				})
 
 			}),
@@ -360,10 +367,15 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 					return
 				}
 
+				words := strings.SplitN(honk.Message, " ", 6)
+
+				title := "@" + userHandle + ": " + strings.Join(words[0:len(words)-1], " ") + "..."
+
 				t_article.Execute(w, map[string]interface{}{
-					"title": "Honk page",
-					"name":  userHandle,
-					"honk":  honk,
+					"title":       title,
+					"description": honk.Message,
+					"name":        userHandle,
+					"honk":        honk,
 				})
 
 			}),
