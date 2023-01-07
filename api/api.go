@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/fulldump/box"
@@ -95,6 +96,8 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 		WithInterceptors(ensureUser).
 		WithActions(
 			box.Get(func(ctx context.Context, w http.ResponseWriter) {
+
+				w.Header().Set(`Link`, `<https://goose.blue/>; rel="canonical"`)
 
 				max := 100
 				reader, err := GetInceptionClient(ctx).Find("tweets", inceptiondb.FindQuery{
@@ -257,6 +260,8 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 
 				userHandle := box.GetUrlParameter(ctx, "user-id")
 
+				w.Header().Set(`Link`, `<https://goose.blue/user/`+url.PathEscape(userHandle)+`>; rel="canonical"`)
+
 				user := struct {
 					ID      string `json:"id"`
 					Picture string `json:"picture"`
@@ -335,6 +340,8 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 
 				userHandle := box.GetUrlParameter(ctx, "user-id")
 				honkId := box.GetUrlParameter(ctx, "honk-id")
+
+				w.Header().Set(`Link`, `<https://goose.blue/user/`+url.PathEscape(userHandle)+`/honk/+`+url.PathEscape(honkId)+`>; rel="canonical"`)
 
 				var honk Tweet
 				findErr := inception.FindOne("honks", inceptiondb.FindQuery{
