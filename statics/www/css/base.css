@@ -181,6 +181,8 @@ body {
 .tweet .message {
     padding-top: 8px;
     font-size: 15px;
+    font-weight: normal;
+    margin: 0;
 }
 
 .tweet footer.buttons {
