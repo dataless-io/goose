@@ -43,7 +43,7 @@ func main() {
 	}()
 
 	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 	_, ok := <-signals
 	if ok {
 		fmt.Println("terminating...")
