@@ -14,7 +14,7 @@ import (
 type Streams struct {
 	Inception *inceptiondb.Client
 	Prefix    string
-	counters  map[string]int64
+	counters  map[string]*Counter
 	wg        *sync.WaitGroup
 	stop      bool
 }
@@ -44,18 +44,18 @@ func NewStreams(inception *inceptiondb.Client) *Streams {
 		panic(err) // todo: dont panic!!!!
 	}
 
-	counters := map[string]int64{}
+	counters := map[string]*Counter{}
 	d := json.NewDecoder(data)
 	for {
-		entry := Counter{}
-		err := d.Decode(&entry)
+		entry := &Counter{}
+		err := d.Decode(entry)
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
 			panic(err) // todo: dont panic!!!!
 		}
-		counters[entry.Name] = entry.Last
+		counters[entry.Name] = entry
 	}
 
 	return &Streams{
@@ -109,11 +109,12 @@ func (s *Streams) Receive(name string, flow string, callback func(data []byte) e
 	s.wg.Add(1)
 	defer s.wg.Done()
 
-	counter_name := name + ":" + flow
+	counterName := name + ":" + flow
+	counter := s.counters[counterName]
 
 	// Create counter if does not exist..., not sure if needed
 	s.Inception.Insert(s.Prefix+"counters", Counter{
-		Name: counter_name,
+		Name: counterName,
 		Last: 0,
 	})
 
@@ -122,7 +123,7 @@ func (s *Streams) Receive(name string, flow string, callback func(data []byte) e
 		data, err := s.Inception.Find(s.Prefix+"stream."+name, inceptiondb.FindQuery{
 			Index: "number",
 			From: JSON{
-				"timestamp": s.counters[counter_name],
+				"timestamp": counter.Last,
 			},
 			To: JSON{
 				"timestamp": time.Now().UnixNano(), // Avoid fetch events from the future
@@ -146,13 +147,13 @@ func (s *Streams) Receive(name string, flow string, callback func(data []byte) e
 				panic(err) // todo: dont panic!!!!
 			}
 
-			if entry.Timestamp == s.counters[counter_name] {
+			if entry.Timestamp == counter.Last {
 				continue
 			}
 
 			callbackErr := callback(entry.Payload)
 			if callbackErr == nil {
-				s.counters[counter_name] = entry.Timestamp
+				counter.Last = entry.Timestamp
 			}
 		}
 
@@ -175,14 +176,14 @@ func (s *Streams) Persist() error {
 
 	log.Println("Streams persist counters")
 
-	for name, last := range s.counters {
-		log.Println(name, last)
+	for _, counter := range s.counters {
+		log.Println(counter.Name, counter.Last)
 		s.Inception.Patch(s.Prefix+"counters", inceptiondb.PatchQuery{
 			Filter: JSON{
-				"name": name,
+				"name": counter.Name,
 			},
 			Patch: JSON{
-				"last": last,
+				"last": counter.Last,
 			},
 		})
 	}
