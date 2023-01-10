@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"regexp"
@@ -174,16 +173,18 @@ func Bootstrap(c Config) (start, stop func() error) {
 		Addr:    c.Addr,
 		Handler: a,
 	}
-	fmt.Println("listening on ", s.Addr)
+	log.Println("listening on ", s.Addr)
 
 	start = func() error {
 		err := s.ListenAndServe()
-		st.Wait()
 		return err
 	}
 
 	stop = func() error {
+		log.Println("Stop streams...")
 		st.Close()
+		st.Wait()
+		log.Println("Stop http server...")
 		return s.Shutdown(context.Background())
 	}
 

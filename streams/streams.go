@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"sync"
 	"time"
 
@@ -174,7 +175,10 @@ func (s *Streams) Close() {
 
 func (s *Streams) Persist() error {
 
+	log.Println("Streams persist counters")
+
 	for name, last := range s.counters {
+		log.Println(name, last)
 		s.Inception.Patch(s.Prefix+"counters", inceptiondb.PatchQuery{
 			Filter: JSON{
 				"name": name,

@@ -35,21 +35,22 @@ func main() {
 
 	start, stop := Bootstrap(c)
 
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT)
 	go func() {
-		_, ok := <-signals
-		if ok {
-			fmt.Println("terminating...")
-			err := stop()
-			if err != nil {
-				log.Println("stop:", err.Error())
-			}
+		err := start()
+		if err != nil {
+			log.Println("start:", err.Error())
 		}
 	}()
 
-	err := start()
-	if err != nil {
-		log.Println("start:", err.Error())
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT)
+	_, ok := <-signals
+	if ok {
+		fmt.Println("terminating...")
+		err := stop()
+		if err != nil {
+			log.Println("stop:", err.Error())
+		}
 	}
+
 }
