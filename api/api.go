@@ -127,7 +127,7 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 
 				t_home.Execute(w, map[string]interface{}{
 					"title":       "Goose - La red social libre",
-					"description": "Goose, la red social realmente libre con el código fuente disponible en github.com/dataless-io/goose hasta que el dinero o la ley digan lo contrario, ¡Aprovéchala!",
+					"description": "Goose, la red social realmente libre hasta que el dinero o la ley digan lo contrario, con el código fuente disponible en github.com/dataless-io/goose ¡Aprovéchala!",
 					"tweets":      tweets,
 				})
 
@@ -237,7 +237,7 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
         <loc>https://goose.blue/user/` + honk.Nick + `/honk/` + honk.ID + `</loc>
         <lastmod>` + time.Unix(honk.Timestamp, 0).Format("2006-01-02") + `</lastmod>
         <changefreq>daily</changefreq>
-        <priority>0.6</priority>
+        <priority>0.9</priority>
     </url>
 `))
 
