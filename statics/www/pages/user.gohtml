@@ -13,7 +13,7 @@
     {{range .tweets  }}
         <article class="tweet" role="article" data-id="{{ .id }}">
             <a class="avatar" rel="author" href="/user/{{ .nick }}" tabindex="-1">
-                <img src="{{ .picture }}" alt="">
+                <img src="{{ .picture }}" alt="Avatar de {{ .nick }}">
             </a>
             <div>
                 <a class="author" rel="author" href="/user/{{ .nick }}">
@@ -24,7 +24,7 @@
                     <time datetime="{{ printf "%.0f" .timestamp }}" title="2014-10-22 15:12:22" data-unix="{{ printf "%.0f" .timestamp }}"></time>
                 </a>
             </div>
-            <h1 class="message">{{ .message }}</h1>
+            <h2 class="message">{{ .message }}</h2>
         </article>
     {{end}}
 {{end}}
