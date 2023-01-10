@@ -105,9 +105,17 @@ func Bootstrap(c Config) (start, stop func() error) {
 
 	go func() {
 		err := st.Receive("honk_create", "insert_honk", func(data []byte) error {
-			tweet := api.Tweet{}
-			json.Unmarshal(data, &tweet)
-			return inception.Insert("honks", tweet)
+			honk := api.Tweet{}
+			json.Unmarshal(data, &honk)
+
+			err := inception.Insert("honks", honk)
+			if err == inceptiondb.ErrorAlreadyExist {
+				return nil
+			}
+			if err != nil {
+				log.Println("ERROR: mention:", honk.UserID, err.Error())
+			}
+			return nil
 		})
 		if err != nil {
 			panic("stream receive 'honk_create'->'insert_honk':" + err.Error())
@@ -118,18 +126,21 @@ func Bootstrap(c Config) (start, stop func() error) {
 		err := st.Receive("honk_create", "insert_user_honk", func(data []byte) error {
 			honk := api.Tweet{}
 			json.Unmarshal(data, &honk)
-			insertErr := inception.Insert("user_honks", api.JSON{
+			err := inception.Insert("user_honks", api.JSON{
 				"user_id":   honk.UserID,
 				"timestamp": honk.Timestamp,
 				"honk":      honk,
 			})
-			if insertErr != nil {
-				log.Println("ERROR: mention:", honk.UserID, insertErr.Error())
+			if err == inceptiondb.ErrorAlreadyExist {
+				return nil
+			}
+			if err != nil {
+				log.Println("ERROR: user_honks:", honk.UserID, err.Error())
 			}
 			return nil
 		})
 		if err != nil {
-			panic("stream receive 'honk_create'->'insert_honk':" + err.Error())
+			panic("stream receive 'honk_create'->'insert_user_honk':" + err.Error())
 		}
 	}()
 
@@ -150,13 +161,13 @@ func Bootstrap(c Config) (start, stop func() error) {
 				if findErr != nil {
 					continue
 				}
-				insertErr := inception.Insert("user_honks", api.JSON{
+				err := inception.Insert("user_honks", api.JSON{
 					"user_id":   user.ID,
 					"timestamp": honk.Timestamp,
 					"honk":      honk,
 				})
-				if insertErr != nil {
-					log.Println("ERROR: mention:", user.ID, insertErr.Error())
+				if err != nil {
+					log.Println("ERROR: mention:", user.ID, err.Error())
 				}
 			}
 

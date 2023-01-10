@@ -58,8 +58,6 @@ func NewStreams(inception *inceptiondb.Client) *Streams {
 		counters[entry.Name] = entry.Last
 	}
 
-	fmt.Println(counters)
-
 	return &Streams{
 		Prefix:    prefix,
 		Inception: inception,

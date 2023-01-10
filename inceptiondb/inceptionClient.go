@@ -214,6 +214,14 @@ func (c *Client) Insert(collection string, document interface{}) error {
 	if resp.StatusCode == http.StatusCreated {
 		return nil
 	}
+
+	apiError := ApiError{}
+	json.NewDecoder(resp.Body).Decode(&apiError)
+
+	if resp.StatusCode == http.StatusConflict || strings.Contains(apiError.Message, "index conflict") {
+		return ErrorAlreadyExist
+	}
+
 	if resp.StatusCode == http.StatusForbidden {
 		return ErrorForbidden
 	}

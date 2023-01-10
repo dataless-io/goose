@@ -2,7 +2,6 @@ package statics
 
 import (
 	"embed"
-	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -18,9 +17,6 @@ var www embed.FS
 
 func FileReader(statics string) func(filename string) ([]byte, error) {
 	return func(filename string) ([]byte, error) {
-
-		fmt.Println("READ FILE:", statics, filename)
-
 		if statics == "" {
 			return www.ReadFile(path.Join("www", filename))
 		}
