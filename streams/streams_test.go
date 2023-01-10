@@ -11,7 +11,6 @@ import (
 	"github.com/fulldump/biff"
 	"github.com/google/uuid"
 
-	"goose/api"
 	"goose/inceptiondb"
 )
 
@@ -28,34 +27,30 @@ func TestHello(t *testing.T) {
 
 	s := NewStreams(inception)
 
-	go func() {
-		time.Sleep(5 * time.Second)
-		s.Close()
-	}()
-
 	ensureErr := s.Ensure("honk_create")
 	biff.AssertNil(ensureErr)
 
-	sendErr := s.Send("honk_create", api.Tweet{
-		ID:        uuid.New().String(),
-		Message:   "Hello world!! " + time.Now().String(),
-		UserID:    "my-user",
-		Nick:      "my-nick",
-		Timestamp: time.Now().UnixNano(),
+	sendErr := s.Send("honk_create", JSON{
+		"id":        uuid.New().String(),
+		"message":   "Hello world!! " + time.Now().String(),
+		"user_id":   "my-user",
+		"nick":      "my-nick",
+		"timestamp": time.Now().UnixNano(),
 	})
 	biff.AssertNil(sendErr)
 
-	receiveErr := s.Receive("honk_create", "mentions", func(data []byte) error {
+	go func() {
+		receiveErr := s.Receive("honk_create", "mentions", func(data []byte) error {
 
-		tweet := api.Tweet{}
-		json.Unmarshal(data, &tweet)
+			tweet := JSON{}
+			json.Unmarshal(data, &tweet)
 
-		fmt.Println("mentions:", tweet)
+			fmt.Println("mentions:", tweet)
 
-		return nil
-	})
-
-	biff.AssertNil(receiveErr)
+			return nil
+		})
+		biff.AssertNil(receiveErr)
+	}()
 
 	cols := []string{
 		"streams.counters",
@@ -67,9 +62,10 @@ func TestHello(t *testing.T) {
 			Limit: 100,
 		})
 		_ = findErr
-		//biff.AssertNil(findErr)
+		// biff.AssertNil(findErr)
 		io.Copy(os.Stdout, data)
 	}
 
+	s.Close()
 	s.Wait()
 }
