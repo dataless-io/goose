@@ -2,7 +2,7 @@
 
 <div id="publish"></div>
 
-	{{range .tweets  }}
+	{{range $i, $tweet := .tweets  }}
 <article class="tweet" role="article" data-id="{{ .id }}">
 	<a class="avatar" rel="author" href="/user/{{ .nick }}" tabindex="-1">
 		<img src="{{ .picture }}" alt="Avatar de {{ .nick }}">
@@ -16,7 +16,11 @@
 			<time datetime="{{ printf "%.0f" .timestamp }}" title="2014-10-22 15:12:22" data-unix="{{ printf "%.0f" .timestamp }}"></time>
 		</a>
 	</div>
-	<h2 class="message">{{ .message }}</h2>
+	{{ if eq $i 0 }}
+		<h1 class="message">{{ .message }}</h1>
+	{{ else }}
+		<h2 class="message">{{ .message }}</h2>
+	{{ end }}
 </article>
 	{{end}}
 {{end}}
