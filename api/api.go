@@ -125,10 +125,17 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 					tweets = append(tweets, tweet)
 				}
 
+				title := "Goose - La red social libre"
+				description := "Goose, la red social realmente libre hasta que el dinero o la ley digan lo contrario, con el código fuente disponible en github.com/dataless-io/goose ¡Aprovéchala!"
+
 				t_home.Execute(w, map[string]interface{}{
-					"title":       "Goose - La red social libre",
-					"description": "Goose, la red social realmente libre hasta que el dinero o la ley digan lo contrario, con el código fuente disponible en github.com/dataless-io/goose ¡Aprovéchala!",
-					"tweets":      tweets,
+					"title":          title,
+					"description":    description,
+					"tweets":         tweets,
+					"og_title":       title,
+					"og_url":         "https://goose.blue/",
+					"og_image":       "https://goose.blue/logo-blue-big.png",
+					"og_description": description,
 				})
 
 			}),
@@ -261,7 +268,8 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 
 				userHandle := box.GetUrlParameter(ctx, "user-id")
 
-				w.Header().Set(`Link`, `<https://goose.blue/user/`+url.PathEscape(userHandle)+`>; rel="canonical"`)
+				selfUrl := `https://goose.blue/user/` + url.PathEscape(userHandle)
+				w.Header().Set(`Link`, `<`+selfUrl+`>; rel="canonical"`)
 
 				user := struct {
 					ID      string `json:"id"`
@@ -324,12 +332,18 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 					description += ": " + honks[0]["message"].(string)
 				}
 
+				title := "Goose @" + userHandle
+
 				t_user.Execute(w, map[string]interface{}{
-					"title":       "Goose @" + userHandle,
-					"description": description,
-					"name":        userHandle,
-					"avatar":      user.Picture,
-					"tweets":      honks,
+					"title":          title,
+					"description":    description,
+					"name":           userHandle,
+					"avatar":         user.Picture,
+					"tweets":         honks,
+					"og_title":       title,
+					"og_url":         selfUrl,
+					"og_image":       user.Picture,
+					"og_description": description,
 				})
 
 			}),
@@ -348,7 +362,8 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 				userHandle := box.GetUrlParameter(ctx, "user-id")
 				honkId := box.GetUrlParameter(ctx, "honk-id")
 
-				w.Header().Set(`Link`, `<https://goose.blue/user/`+url.PathEscape(userHandle)+`/honk/+`+url.PathEscape(honkId)+`>; rel="canonical"`)
+				selfUrl := `https://goose.blue/user/` + url.PathEscape(userHandle) + `/honk/` + url.PathEscape(honkId)
+				w.Header().Set(`Link`, `<`+selfUrl+`>; rel="canonical"`)
 
 				var honk Tweet
 				findErr := inception.FindOne("honks", inceptiondb.FindQuery{
@@ -372,12 +387,15 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 				title := "@" + userHandle + ": " + strings.Join(words[0:len(words)-1], " ") + "..."
 
 				t_article.Execute(w, map[string]interface{}{
-					"title":       title,
-					"description": honk.Message,
-					"name":        userHandle,
-					"honk":        honk,
+					"title":          title,
+					"description":    honk.Message,
+					"name":           userHandle,
+					"honk":           honk,
+					"og_title":       title,
+					"og_url":         selfUrl,
+					"og_image":       honk.Picture,
+					"og_description": honk.Message,
 				})
-
 			}),
 		)
 

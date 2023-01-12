@@ -6,13 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/css/base.css">
     <script src="/js/main.js" defer></script>
+
     <!-- Facebook Open Graph meta tags
     documentation: https://developers.facebook.com/docs/sharing/opengraph -->
-    <meta property="og:title" content="Goose" />
-    <meta property="og:url" content="https://goose.blue/" />
-    <meta property="og:image" content="https://goose.blue/logo-blue-200.png" />
-    <meta property="og:site_name" content="Goose" />
-    <meta property="og:description" content="Goose, la red social realmente libre hasta que el dinero o la ley digan lo contrario, con el código fuente disponible en github.com/dataless-io/goose ¡Aprovéchala!" />
+    <meta property="og:title" content="{{ .og_title }}" />
+    <meta property="og:url" content="{{ .og_url }}" />
+    <meta property="og:image" content="{{ .og_image }}" />
+    <meta property="og:site_name" content="Goose, la red social libre" />
+    <meta property="og:description" content="{{ .og_description }}" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-GKTKKM9FTL"></script>
