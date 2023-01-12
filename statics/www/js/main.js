@@ -53,7 +53,7 @@ document.querySelectorAll("article.tweet").forEach(item => {
     const button_follow = document.createElement('button');
     button_follow.classList.add('button-follow');
     button_follow.textContent = '👣';
-    item.insertBefore(button_follow, dom_avatar.nextSibling);
+    // item.insertBefore(button_follow, dom_avatar.nextSibling);
 
     // Footer buttons:
     const footer = document.createElement('footer');
@@ -62,17 +62,17 @@ document.querySelectorAll("article.tweet").forEach(item => {
     const button_comment = document.createElement('button');
     button_comment.classList.add('button');
     button_comment.textContent = 'Comment';
-    footer.appendChild(button_comment);
+    // footer.appendChild(button_comment);
 
     const button_rehonk = document.createElement('button');
     button_rehonk.classList.add('button');
     button_rehonk.textContent = 'Rehonk';
-    footer.appendChild(button_rehonk);
+    // footer.appendChild(button_rehonk);
 
     const button_like = document.createElement('button');
     button_like.classList.add('button');
     button_like.textContent = 'Like';
-    footer.appendChild(button_like);
+    // footer.appendChild(button_like);
 
     const button_share = document.createElement('button');
     button_share.classList.add('button');
