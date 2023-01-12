@@ -45,6 +45,13 @@ document.querySelectorAll("article.tweet").forEach(item => {
     dom_time.textContent = prettyDate(honk_date);
     dom_time.setAttribute('title', honk_date.toLocaleString());
 
+    // Follow button:
+    const dom_avatar = item.querySelector('a.avatar');
+    const button_follow = document.createElement('button');
+    button_follow.classList.add('button-follow');
+    button_follow.textContent = '👣';
+    item.insertBefore(button_follow, dom_avatar.nextSibling);
+
     // Footer buttons:
     const footer = document.createElement('footer');
     footer.classList.add('buttons');

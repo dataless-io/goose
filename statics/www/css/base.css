@@ -146,6 +146,29 @@ body {
     background-color: #F8F8F8;
 }
 
+.tweet .button-follow {
+    float: left;
+    margin-left: -70px;
+    clear: left;
+    width: 56px;
+    border: none;
+    background: none;
+    padding: 1px 0;
+    margin-top: 5px;
+    font-size: 20px;
+    opacity: 0.3;
+}
+
+.tweet .button-follow:hover {
+    cursor: pointer;
+    background-color: #e16c45;
+    border-radius: 5px;
+}
+
+.tweet .button-follow.following {
+    opacity: 1;
+}
+
 .tweet .author {
     text-decoration: none;
 }
