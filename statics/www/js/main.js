@@ -41,6 +41,9 @@ document.querySelectorAll("article.tweet").forEach(item => {
 
     // Pretty date:
     const dom_time = item.querySelector('time');
+    const dom_message = item.querySelector('.message');
+    const dom_date = item.querySelector('.date');
+    // const dom_nickname = item.querySelector('.nickname');
     const honk_date = new Date(1000*dom_time.dataset.unix);
     dom_time.textContent = prettyDate(honk_date);
     dom_time.setAttribute('title', honk_date.toLocaleString());
@@ -73,6 +76,11 @@ document.querySelectorAll("article.tweet").forEach(item => {
 
     const button_share = document.createElement('button');
     button_share.classList.add('button');
+    button_share.addEventListener('click', function() {
+        window.location.href = 'https://twitter.com/intent/tweet?text='+encodeURIComponent(dom_message.textContent)+
+        '&url='+encodeURIComponent('https://goose.blue'+dom_date.getAttribute('href'))+
+        '&hashtags=gooseblue,cloneTweeter,openSource';
+    }, true);
     button_share.textContent = 'Share';
     footer.appendChild(button_share);
 
