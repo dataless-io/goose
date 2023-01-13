@@ -93,6 +93,28 @@ func Bootstrap(c Config) (start, stop func() error) {
 			panic("ensure index 'by user-timestamp' on user_honks: " + err.Error())
 		}
 	}
+	{
+		err := inception.EnsureIndex("followers", &inceptiondb.IndexOptions{
+			Name:   "by user",
+			Type:   "btree",
+			Fields: []string{"user_id", "follower_id"},
+			Sparse: true,
+		})
+		if err != nil {
+			panic("ensure index 'by user' on followers: " + err.Error())
+		}
+	}
+	{
+		err := inception.EnsureIndex("followers", &inceptiondb.IndexOptions{
+			Name:   "by follower",
+			Type:   "btree",
+			Fields: []string{"follower_id", "user_id"},
+			Sparse: true,
+		})
+		if err != nil {
+			panic("ensure index 'by follower' on followers: " + err.Error())
+		}
+	}
 
 	st := streams.NewStreams(inception)
 
@@ -100,6 +122,12 @@ func Bootstrap(c Config) (start, stop func() error) {
 		err := st.Ensure("honk_create")
 		if err != nil {
 			panic("ensure stream 'honk_create':" + err.Error())
+		}
+	}
+	{
+		err := st.Ensure("user_follow")
+		if err != nil {
+			panic("ensure stream 'user_follow':" + err.Error())
 		}
 	}
 
