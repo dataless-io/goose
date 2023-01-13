@@ -87,8 +87,8 @@ func sitemap(ctx context.Context, w http.ResponseWriter) {
 	w.Write([]byte(`    <url>
         <loc>https://goose.blue/</loc>
         <lastmod>` + time.Unix(latestTimestamp, 0).Format("2006-01-02") + `</lastmod>
-        <changefreq>daily</changefreq>
-        <priority>0.8</priority>
+        <changefreq>always</changefreq>
+        <priority>1</priority>
     </url>
 `))
 
@@ -101,7 +101,7 @@ func sitemap(ctx context.Context, w http.ResponseWriter) {
         <loc>https://goose.blue/user/` + userID + `</loc>
         <lastmod>` + timestamp.Format("2006-01-02") + `</lastmod>
         <changefreq>daily</changefreq>
-        <priority>0.8</priority>
+        <priority>0.7</priority>
     </url>
 `))
 	}
@@ -111,8 +111,8 @@ func sitemap(ctx context.Context, w http.ResponseWriter) {
 		w.Write([]byte(`    <url>
         <loc>https://goose.blue/user/` + honk.Nick + `/honk/` + honk.ID + `</loc>
         <lastmod>` + time.Unix(honk.Timestamp, 0).Format("2006-01-02") + `</lastmod>
-        <changefreq>daily</changefreq>
-        <priority>0.9</priority>
+        <changefreq>weekly</changefreq>
+        <priority>0.4</priority>
     </url>
 `))
 
