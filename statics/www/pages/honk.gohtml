@@ -4,7 +4,7 @@
             <img src="{{ .honk.Picture }}" alt="">
         </a>
         <div>
-            <a class="author" rel="author" href="/user/{{ .honk.Nick }}">
+            <a class="author" rel="author" href="/user/{{ .honk.Nick }}" data-id="{{ .honk.UserID }}">
                 <span class="nickname">{{ .honk.Nick }}</span>
                 <span class="username">@{{ .honk.Nick }}</span>
             </a>
