@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"regexp"
@@ -203,6 +205,61 @@ func Bootstrap(c Config) (start, stop func() error) {
 		})
 		if err != nil {
 			panic("stream receive 'honk_create'->'mention':" + err.Error())
+		}
+	}()
+
+	go func() {
+		err := st.Receive("honk_create", "follow_user", func(data []byte) error {
+			honk := api.Tweet{}
+			json.Unmarshal(data, &honk)
+
+			// fetch followers
+			reader, err := inception.Find("followers", inceptiondb.FindQuery{
+				Index: "by user",
+				Limit: 100, // TODO: this max number of followers...
+				From: map[string]interface{}{
+					"user_id":     honk.UserID,
+					"follower_id": "",
+				},
+				To: map[string]interface{}{
+					"user_id":     honk.UserID,
+					"follower_id": "z",
+				},
+			})
+			if err != nil {
+				log.Println("ERROR: fetch followers:", err.Error())
+			}
+			defer reader.Close()
+
+			j := json.NewDecoder(reader)
+			for {
+				relationship := struct {
+					UserID     string `json:"user_id"`
+					FollowerID string `json:"follower_id"`
+				}{}
+				err := j.Decode(&relationship)
+				if err == io.EOF {
+					break
+				}
+				if err != nil {
+					err = fmt.Errorf("error decoding %w", err)
+				}
+
+				err = inception.Insert("user_honks", api.JSON{
+					"user_id":   relationship.FollowerID,
+					"timestamp": honk.Timestamp,
+					"honk":      honk,
+				})
+				if err != nil {
+					log.Println("ERROR: follow:", relationship.FollowerID, err.Error())
+				}
+
+			}
+
+			return nil
+		})
+		if err != nil {
+			panic("stream receive 'honk_create'->'follow_user':" + err.Error())
 		}
 	}()
 
