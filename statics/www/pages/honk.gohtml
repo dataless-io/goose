@@ -1,5 +1,6 @@
 {{define "content"}}
-    <article class="tweet" role="article" data-id="{{ .honk.ID }}">
+    {{ $followers := .followers }}
+    <article class="tweet" role="article" data-id="{{ .honk.ID }}" data-followed="{{index $followers .honk.UserID }}">
         <a class="avatar" rel="author" href="/user/{{ .honk.Nick }}" tabindex="-1">
             <img src="{{ .honk.Picture }}" alt="">
         </a>

@@ -2,13 +2,11 @@ package api
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/fulldump/box"
 
@@ -89,59 +87,8 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 			glueauth.Require,
 		).
 		WithActions(
-			box.Post(func(ctx context.Context) error {
-
-				userID := box.GetUrlParameter(ctx, "user-id")
-
-				user := JSON{}
-				findErr := GetInceptionClient(ctx).FindOne("users", inceptiondb.FindQuery{
-					Index: "by id",
-					Value: userID,
-				}, &user)
-				if findErr == io.EOF {
-					// todo: return page "user not found 404"
-					box.GetResponse(ctx).WriteHeader(http.StatusNotFound)
-					return errors.New("user does not exist")
-				}
-				if findErr != nil {
-					// todo: return page "something went wrong"
-					return errors.New("unexpected persistence error")
-				}
-
-				me := glueauth.GetAuth(ctx)
-
-				err := GetInceptionClient(ctx).Insert("followers", JSON{
-					"user_id":     userID,
-					"follower_id": me.User.ID,
-					"user":        user,
-				})
-				if err == inceptiondb.ErrorAlreadyExist {
-					return nil
-				}
-				return err
-			}),
-			box.Delete(func(ctx context.Context) interface{} {
-
-				userID := box.GetUrlParameter(ctx, "user-id")
-				me := glueauth.GetAuth(ctx)
-
-				removed, err := GetInceptionClient(ctx).Remove("followers", inceptiondb.FindQuery{
-					Index: "by follower",
-					Limit: 100, // TODO: this max number of followers...
-					From: JSON{
-						"follower_id": me.User.ID,
-						"user_id":     userID,
-					},
-					To: JSON{
-						"follower_id": me.User.ID,
-						"user_id":     userID + "zzzzzzzzzzzz",
-					},
-				})
-
-				io.Copy(os.Stdout, removed)
-
-				return err
-			}),
+			box.Post(follow),
+			box.Delete(unfollow),
 		)
 
 	b.Resource("/").

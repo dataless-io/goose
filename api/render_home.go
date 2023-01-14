@@ -34,6 +34,7 @@ func renderHome(staticsDir string) interface{} {
 		if err != nil {
 			err = fmt.Errorf("error reading from persistence layer")
 		}
+		defer reader.Close()
 		j := json.NewDecoder(reader)
 		for {
 			tweet := JSON{}
@@ -50,10 +51,10 @@ func renderHome(staticsDir string) interface{} {
 		// fetch followers
 		followers := map[string]bool{}
 		auth := glueauth.GetAuth(ctx)
-		if auth != nil || true {
+		if auth != nil {
 
-			// followerID := auth.User.ID
-			followerID := "user-123"
+			followerID := auth.User.ID
+			// followerID := "user-123" // todo: remove this
 
 			reader, err := GetInceptionClient(ctx).Find("followers", inceptiondb.FindQuery{
 				Index: "by follower",
