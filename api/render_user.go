@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 
 	"github.com/fulldump/box"
 
+	"goose/glueauth"
 	"goose/inceptiondb"
 )
 
@@ -83,6 +85,48 @@ func renderUser(staticsDir string) interface{} {
 			honks = append(honks, item.Honk)
 		}
 
+		// fetch followers
+		followers := map[string]bool{}
+		auth := glueauth.GetAuth(ctx)
+		if auth != nil {
+
+			followerID := auth.User.ID
+			// followerID := "user-123" // TODO: remove this
+
+			reader, err := GetInceptionClient(ctx).Find("followers", inceptiondb.FindQuery{
+				Index: "by follower",
+				Limit: 100, // TODO: this max number of followers...
+				From: JSON{
+					"follower_id": followerID,
+					"user_id":     "",
+				},
+				To: JSON{
+					"follower_id": followerID,
+					"user_id":     "z",
+				},
+			})
+			if err != nil {
+				log.Println("ERROR: fetch followers:", err.Error())
+			}
+			defer reader.Close()
+
+			j := json.NewDecoder(reader)
+			for {
+				relationship := struct {
+					UserID     string `json:"user_id"`
+					FollowerID string `json:"follower_id"`
+				}{}
+				err := j.Decode(&relationship)
+				if err == io.EOF {
+					break
+				}
+				if err != nil {
+					err = fmt.Errorf("error decoding %w", err)
+				}
+				followers[relationship.UserID] = true
+			}
+		}
+
 		description := "@" + userHandle
 		if len(honks) > 0 {
 			description += ": " + honks[0]["message"].(string)
@@ -96,6 +140,7 @@ func renderUser(staticsDir string) interface{} {
 			"name":           userHandle,
 			"avatar":         user.Picture,
 			"tweets":         honks,
+			"followers":      followers,
 			"og_title":       title,
 			"og_url":         selfUrl,
 			"og_image":       user.Picture,

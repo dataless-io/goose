@@ -156,16 +156,16 @@ body {
     padding: 1px 0;
     margin-top: 5px;
     font-size: 20px;
-    opacity: 0.3;
+    opacity: 0.2;
 }
 
 .tweet .button-follow:hover {
     cursor: pointer;
-    background-color: #e16c45;
+    background-color: orange;
     border-radius: 5px;
 }
 
-.tweet .button-follow.following {
+.tweet .button-follow.active {
     opacity: 1;
 }
 

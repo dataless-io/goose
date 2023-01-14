@@ -283,6 +283,46 @@ func (c *Client) Find(collection string, query FindQuery) (io.ReadCloser, error)
 	return nil, ErrorUnexpected
 }
 
+func (c *Client) Remove(collection string, query FindQuery) (io.ReadCloser, error) {
+
+	payload, err := json.Marshal(query)
+	if err != nil {
+		return nil, err // todo: wrap error
+	}
+
+	endpoint := c.config.Base + "/databases/" + url.PathEscape(c.config.DatabaseID) + "/collections/" + url.PathEscape(collection) + ":remove"
+
+	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Api-Key", c.config.ApiKey)
+	req.Header.Set("Api-Secret", c.config.ApiSecret)
+
+	resp, err := c.HttpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("persistence read error")
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		return resp.Body, nil
+	}
+
+	defer func() {
+		io.Copy(os.Stdout, resp.Body)
+		resp.Body.Close()
+	}()
+
+	if resp.StatusCode == http.StatusForbidden {
+		return nil, ErrorForbidden
+	}
+	if resp.StatusCode == http.StatusUnauthorized {
+		return nil, ErrorUnauthorized
+	}
+
+	return nil, ErrorUnexpected
+}
+
 type PatchQuery struct {
 	Index   string `json:"index,omitempty"`
 	Skip    int    `json:"skip,omitempty"`

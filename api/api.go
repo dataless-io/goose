@@ -82,6 +82,15 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 		}),
 	)
 
+	user.Resource("/follow").
+		WithInterceptors(
+			glueauth.Require,
+		).
+		WithActions(
+			box.Post(follow),
+			box.Delete(unfollow),
+		)
+
 	b.Resource("/").
 		WithInterceptors(ensureUser).
 		WithActions(

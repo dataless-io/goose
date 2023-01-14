@@ -39,9 +39,12 @@ function prettyDate(d) {
 
 document.querySelectorAll("article.tweet").forEach(item => {
 
+
+    const dom_author = item.querySelector('.author');
+    const dom_message = item.querySelector('.message');
+
     // Pretty date:
     const dom_time = item.querySelector('time');
-    const dom_message = item.querySelector('.message');
     const dom_date = item.querySelector('.date');
     // const dom_nickname = item.querySelector('.nickname');
     const honk_date = new Date(1000*dom_time.dataset.unix);
@@ -53,7 +56,28 @@ document.querySelectorAll("article.tweet").forEach(item => {
     const button_follow = document.createElement('button');
     button_follow.classList.add('button-follow');
     button_follow.textContent = '👣';
-    // item.insertBefore(button_follow, dom_avatar.nextSibling);
+    button_follow.userId = dom_author.dataset.id;
+    if (item.dataset.followed == 'true') {
+        button_follow.classList.add('active');
+    }
+    button_follow.addEventListener('click', function () {
+
+        let method = 'POST';
+        if (this.classList.contains('active')) {
+            method = 'DELETE';
+            this.classList.remove('active');
+        } else {
+            this.classList.add('active');
+        }
+
+        fetch('/v0/users/'+encodeURIComponent(this.userId)+'/follow', {method:method, headers: {'X-Glue-Authentication':XAuthHeader}})
+            .then(resp => {
+                if (resp.status != 200) {
+                    throw 'bad status code';
+                }
+            });
+    }, true);
+    item.insertBefore(button_follow, dom_avatar.nextSibling);
 
     // Footer buttons:
     const footer = document.createElement('footer');
@@ -158,9 +182,8 @@ function sendHonk(f, message, parentHonkId) {
 
 
 (function() {
-
-
     let publish_dom = document.querySelector("#publish");
+    if (!publish_dom) return;
 
     // avatar is created in global scope
     avatar.classList.add('avatar');
@@ -221,7 +244,4 @@ function sendHonk(f, message, parentHonkId) {
             location.reload();
         }, text_input.value);
     }, true);
-
-
 })();
-

@@ -1,10 +1,11 @@
 {{define "content"}}
-    <article class="tweet" role="article" data-id="{{ .honk.ID }}">
+    {{ $followers := .followers }}
+    <article class="tweet" role="article" data-id="{{ .honk.ID }}" data-followed="{{index $followers .honk.UserID }}">
         <a class="avatar" rel="author" href="/user/{{ .honk.Nick }}" tabindex="-1">
             <img src="{{ .honk.Picture }}" alt="">
         </a>
         <div>
-            <a class="author" rel="author" href="/user/{{ .honk.Nick }}">
+            <a class="author" rel="author" href="/user/{{ .honk.Nick }}" data-id="{{ .honk.UserID }}">
                 <span class="nickname">{{ .honk.Nick }}</span>
                 <span class="username">@{{ .honk.Nick }}</span>
             </a>
