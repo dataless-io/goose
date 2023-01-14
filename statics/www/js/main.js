@@ -105,8 +105,12 @@ document.querySelectorAll("article.tweet").forEach(item => {
         '&url='+encodeURIComponent('https://goose.blue'+dom_date.getAttribute('href'))+
         '&hashtags=gooseblue,cloneTweeter,openSource';
     }, true);
-    button_share.textContent = 'Share';
+    button_share.setAttribute('title', 'Compartir');
     footer.appendChild(button_share);
+    const icon_share = document.createElement('span');
+    icon_share.classList.add('icon');
+    icon_share.classList.add('icon-share');
+    button_share.appendChild(icon_share);
 
     item.appendChild(footer);
 
