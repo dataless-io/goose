@@ -114,6 +114,9 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 
 	// Mount statics
 	b.Resource("/*").
+		WithInterceptors(
+			IfModifiedSince(),
+		).
 		WithActions(
 			box.Get(statics.ServeStatics(staticsDir)).WithName("serveStatics"),
 		)
