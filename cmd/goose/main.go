@@ -13,9 +13,10 @@ import (
 )
 
 type Config struct {
-	Addr      string `json:"addr"`
-	Statics   string `json:"statics"`
-	Inception inceptiondb.Config
+	Addr              string `json:"addr"`
+	Statics           string `json:"statics"`
+	Inception         inceptiondb.Config
+	EnableCompression bool `json:"enable_compression"`
 }
 
 func main() {

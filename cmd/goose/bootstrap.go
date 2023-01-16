@@ -265,6 +265,12 @@ func Bootstrap(c Config) (start, stop func() error) {
 
 	a := api.Build(inception, st, c.Statics)
 
+	// Add compression
+	if c.EnableCompression {
+		fmt.Println("Compression enabled")
+		a.WithInterceptors(api.Compression)
+	}
+
 	s := &http.Server{
 		Addr:    c.Addr,
 		Handler: a,

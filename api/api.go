@@ -16,7 +16,7 @@ import (
 	"goose/streams"
 )
 
-func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string) http.Handler {
+func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string) *box.B {
 
 	b := box.NewBox()
 
