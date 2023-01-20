@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/fulldump/box"
 
@@ -135,10 +136,11 @@ func ensureUser(next box.H) box.H {
 		}
 
 		user := struct {
-			ID      string `json:"id"`
-			Handle  string `json:"handle"`
-			Nick    string `json:"nick"`
-			Picture string `json:"picture"`
+			ID            string `json:"id"`
+			Handle        string `json:"handle"`
+			Nick          string `json:"nick"`
+			Picture       string `json:"picture"`
+			JoinTimestamp int64  `json:"join_timestamp"`
 		}{}
 
 		inception := GetInceptionClient(ctx)
@@ -151,9 +153,10 @@ func ensureUser(next box.H) box.H {
 			user.Handle = auth.User.Nick // todo: conflict with handler?
 			user.Nick = auth.User.Nick
 			user.Picture = auth.User.Picture
+			user.JoinTimestamp = time.Now().UnixNano()
 			insertErr := inception.Insert("users", user)
 			if insertErr != nil {
-				fmt.Println("ERROR: insert user:", err.Error())
+				fmt.Println("ERROR: insert user:", insertErr.Error())
 			}
 			return
 		}

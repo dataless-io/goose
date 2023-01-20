@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/fulldump/box"
 
@@ -30,8 +31,9 @@ func renderUser(staticsDir string) interface{} {
 		w.Header().Set(`Link`, `<`+selfUrl+`>; rel="canonical"`)
 
 		user := struct {
-			ID      string `json:"id"`
-			Picture string `json:"picture"`
+			ID            string `json:"id"`
+			Picture       string `json:"picture"`
+			JoinTimestamp int64  `json:"join_timestamp"`
 		}{
 			Picture: "/avatar.png",
 		}
@@ -134,11 +136,16 @@ func renderUser(staticsDir string) interface{} {
 
 		title := "Goose @" + userHandle
 
+		joinDate := time.Unix(0, user.JoinTimestamp)
+		joinPretty := joinDate.Format("2006 01 02")
+
 		template.Execute(w, map[string]interface{}{
 			"title":          title,
 			"description":    description,
+			"user":           user,
 			"name":           userHandle,
 			"avatar":         user.Picture,
+			"join_pretty":    joinPretty,
 			"tweets":         honks,
 			"followers":      followers,
 			"og_title":       title,

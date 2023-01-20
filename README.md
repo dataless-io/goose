@@ -30,7 +30,7 @@ Just make a PR. The code should compile and be ready to work.
 ## Comming soon... or not
 
 TOP 3:
-* Join Date (for users)
+* ~~Join Date (for users)~~
 * Re-honk
 * Likes
   * Aggregate likes on each view
@@ -58,4 +58,5 @@ REST:
 * Delete honks
 * Edit honks
 * Notifications
+* Save /auth/me request
 
