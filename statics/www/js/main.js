@@ -136,17 +136,22 @@ fetch('/auth/me').then(resp => {
     user = resp;
     XAuthHeader = JSON.stringify({user});
 
+    let linkUser = document.createElement('a');
+    linkUser.classList.add('auth-link-user');
+    linkUser.setAttribute('href', '/user/'+encodeURIComponent(resp.nick));
+    authDiv.append(linkUser);
+
     let picture = document.createElement('img');
     picture.classList.add('auth-picture');
     picture.setAttribute('src', resp.picture);
-    authDiv.append(picture);
+    linkUser.append(picture);
 
     avatar.setAttribute('src', resp.picture);
 
     let nick = document.createElement('span');
     nick.classList.add('auth-nick');
     nick.textContent = resp.nick;
-    authDiv.append(nick);
+    linkUser.append(nick);
 
     let logout = document.createElement('a');
     logout.classList.add('rounded-button');
