@@ -189,6 +189,18 @@ function sendHonk(f, message, parentHonkId) {
     });
 }
 
+(function() {
+    if (window.localStorage) {
+        console.log('localStorage avaiable');
+        return;
+    }
+    window.localStorage = {
+        clear: function() {},
+        getItem: function() {},
+        removeItem: function() {},
+        setItem: function() {},
+    };
+})();
 
 (function() {
     let publish_dom = document.querySelector("#publish");
@@ -201,6 +213,7 @@ function sendHonk(f, message, parentHonkId) {
     const text_input = document.createElement('textarea');
     text_input.setAttribute('rows', 4);
     text_input.placeholder = '¿Qué está pasando?';
+    text_input.value = localStorage.getItem('new-honk');
     publish_dom.appendChild(text_input);
 
     const buttons = document.createElement('div');
@@ -236,7 +249,6 @@ function sendHonk(f, message, parentHonkId) {
         }
     };
 
-
     text_input.addEventListener('keyup', update_counter, true);
     publish_button.addEventListener('click', function() {
 
@@ -250,7 +262,11 @@ function sendHonk(f, message, parentHonkId) {
             console.log({honk});
             text_input.value = '';
             update_counter();
+            localStorage.removeItem('new-honk');
             location.reload();
         }, text_input.value);
+    }, true);
+    text_input.addEventListener('keyup', function (){
+        localStorage.setItem('new-honk', this.value);
     }, true);
 })();
