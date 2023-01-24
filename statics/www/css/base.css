@@ -215,6 +215,9 @@ body {
   font-size: 15px;
   font-weight: normal;
   margin: 0;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  white-space: break-spaces;
 }
 
 .tweet footer.buttons {
