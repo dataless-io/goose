@@ -1,4 +1,6 @@
+Sitemap: https://goose.blue/sitemap.xml
+
 User-agent: *
 Allow: /
-
-Sitemap: https://goose.blue/sitemap.xml
+Disallow: /auth/
+Disallow: /v0/
