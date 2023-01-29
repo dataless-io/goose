@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -172,7 +173,15 @@ func t(name, staticsDir string, filenames ...string) (t *template.Template, err 
 
 	f := statics.FileReader(staticsDir)
 
-	t = template.New(name)
+	t = template.New(name).Funcs(map[string]any{
+		"json": func(input any) string {
+			result, err := json.Marshal(input)
+			if err != nil {
+				return "" // todo: log or do somehting with this?
+			}
+			return string(result)
+		},
+	})
 
 	for _, filename := range filenames {
 

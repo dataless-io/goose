@@ -37,11 +37,116 @@ function prettyDate(d) {
     return `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()} a las ${d.getHours()}:${d.getMinutes()}`
 }
 
-document.querySelectorAll("article.tweet").forEach(item => {
+function compare( a, b ) {
+    if ( a < b ){
+        return -1;
+    }
+    if ( a > b ){
+        return 1;
+    }
+    return 0;
+}
 
+function substrBytes(str, start, length) {
+    var buf = new Buffer(str);
+    return buf.slice(start, start+length).toString();
+}
+
+document.querySelectorAll("article.tweet").forEach(item => {
 
     const dom_author = item.querySelector('.author');
     const dom_message = item.querySelector('.message');
+
+    // Add links to message
+    try {
+        const links = JSON.parse(item.dataset.links).sort((a,b) => {
+            return compare(a.begin, b.begin);
+        });
+        // const message = item.dataset.message;
+        const message = dom_message.textContent;
+        dom_message.textContent = '';
+        let last = 0;
+
+        dom_mentions = document.createElement('div')
+        dom_mentions.classList.add('mentions');
+
+        links.push({type:'none'});
+        links.forEach(link => {
+            console.log(link);
+
+            // add plain text:
+            const span = document.createElement('span'); // probably should be a text node
+            span.textContent = message.substring(last, link.begin);
+            dom_message.appendChild(span);
+
+            last = link.end;
+
+            switch (link.type) {
+                case 'handler': {
+                    const a = document.createElement('a');
+                    a.href = '/user/'+link.extra.handle;
+                    a.textContent = message.substring(link.begin, link.end);
+                    dom_message.appendChild(a)
+
+                    // Add to mentions
+                    const v = document.createElement('a');
+                    v.href = '/user/'+link.extra.handle;
+                    v.title = link.extra.nick;
+                    const img = document.createElement('img');
+                    img.src = link.extra.picture || '/avatar.png';
+                    v.appendChild(img);
+                    dom_mentions.appendChild(v);
+                    break;
+                }
+                case 'hashtag': {
+                    console.log('HT');
+                    const a = document.createElement('a');
+                    a.href = '/hashtag/'+link.text;
+                    a.textContent = message.substring(link.begin, link.end);
+                    dom_message.appendChild(a)
+                    break;
+                }
+                case 'url': {
+                    const a = document.createElement('a');
+                    a.href = link.text;
+                    a.textContent = message.substring(link.begin, link.end);
+                    dom_message.appendChild(a)
+                    break;
+                }
+                case 'code': {
+                    const s1 = document.createElement('span');
+                    s1.classList.add('code-surround');
+                    s1.textContent = message.substring(link.begin, link.begin+1);
+                    dom_message.appendChild(s1)
+                    const a = document.createElement('code');
+                    a.textContent = message.substring(link.begin+1, link.end-1);
+                    dom_message.appendChild(a)
+                    const s2 = document.createElement('span');
+                    s2.classList.add('code-surround');
+                    s2.textContent = message.substring(link.end-1, link.end);
+                    dom_message.appendChild(s2)
+                    break;
+                }
+                case 'none: {': {
+                    // do nothing
+                    break;
+                }
+            }
+
+
+        });
+
+        // // add plain text:
+        // const span = document.createElement('span'); // probably should be a text node
+        // span.textContent = message.substring(last);
+        // dom_message.appendChild(span);
+        if (dom_mentions.children.length) {
+            item.appendChild(dom_mentions);
+        }
+
+    } catch (e) {
+        //
+    }
 
     // Pretty date:
     const dom_time = item.querySelector('time');

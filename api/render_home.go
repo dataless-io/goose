@@ -19,6 +19,8 @@ func renderHome(staticsDir string) interface{} {
 		panic(err)
 	}
 
+	template.Option()
+
 	return func(ctx context.Context, w http.ResponseWriter) {
 
 		w.Header().Set(`Link`, `<https://goose.blue/>; rel="canonical"`)

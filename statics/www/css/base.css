@@ -220,6 +220,40 @@ body {
   white-space: break-spaces;
 }
 
+.tweet .message a {
+  text-decoration: none;
+  color: dodgerblue;
+}
+
+.tweet .message a:hover {
+  text-decoration: none;
+  color: dodgerblue;
+}
+
+.tweet .message span.code-surround {
+  color: orange;
+  font-weight: bold;
+  font-family: monospace;
+}
+
+.tweet .message code {
+  font-family: monospace;
+  color: #333;
+}
+
+.tweet .mentions {
+  margin-top: 4px;
+  padding: 4px 0;
+  /*border-top: solid #F4F4F4 1px;*/
+}
+
+.tweet .mentions img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
 .tweet footer.buttons {
   padding-top: 8px;
   display: flex;

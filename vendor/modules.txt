@@ -10,3 +10,6 @@ github.com/fulldump/goconfig
 # github.com/google/uuid v1.3.0
 ## explicit
 github.com/google/uuid
+# github.com/mvdan/xurls v1.1.0
+## explicit
+github.com/mvdan/xurls

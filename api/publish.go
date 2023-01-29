@@ -11,6 +11,7 @@ import (
 
 	"goose/glueauth"
 	"goose/inceptiondb"
+	"goose/links"
 )
 
 type PublishInput struct {
@@ -24,13 +25,14 @@ type PublishInput struct {
 	}'
 */
 type Tweet struct {
-	ID          string `json:"id"`
-	Message     string `json:"message"`
-	Timestamp   int64  `json:"timestamp"`
-	UserID      string `json:"user_id"`
-	Nick        string `json:"nick"` // todo: handle instead (or add handle)
-	Picture     string `json:"picture"`
-	LinkedTweet *Tweet `json:"linked_tweet,omitempty"`
+	ID           string        `json:"id"`
+	Message      string        `json:"message"`
+	MessageLinks []*links.Link `json:"message_links"`
+	Timestamp    int64         `json:"timestamp"`
+	UserID       string        `json:"user_id"`
+	Nick         string        `json:"nick"` // todo: handle instead (or add handle)
+	Picture      string        `json:"picture"`
+	LinkedTweet  *Tweet        `json:"linked_tweet,omitempty"`
 }
 
 func Publish(ctx context.Context, input *PublishInput) (interface{}, error) {
@@ -46,7 +48,7 @@ func Publish(ctx context.Context, input *PublishInput) (interface{}, error) {
 		return nil, fmt.Errorf("minimum message length is %d chars", lmin)
 	}
 
-	// Check hook id
+	// Check honk id
 	var parentTweet *Tweet
 	if input.ParentHonkID != "" {
 		query := inceptiondb.FindQuery{
@@ -62,13 +64,14 @@ func Publish(ctx context.Context, input *PublishInput) (interface{}, error) {
 	auth := glueauth.GetAuth(ctx)
 
 	tweet := Tweet{
-		ID:          uuid.New().String(),
-		Message:     input.Message,
-		Timestamp:   time.Now().Unix(),
-		UserID:      auth.User.ID,
-		Nick:        auth.User.Nick,
-		Picture:     auth.User.Picture,
-		LinkedTweet: parentTweet,
+		ID:           uuid.New().String(),
+		Message:      input.Message,
+		Timestamp:    time.Now().Unix(),
+		UserID:       auth.User.ID,
+		Nick:         auth.User.Nick,
+		Picture:      auth.User.Picture,
+		LinkedTweet:  parentTweet,
+		MessageLinks: links.Enrich(links.ParseLinks(input.Message), GetInceptionClient(ctx)),
 	}
 
 	{

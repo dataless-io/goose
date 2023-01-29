@@ -6,3 +6,5 @@ github.com/fulldump/goconfig v1.6.1 h1:3Xif582G08uAWfiLIYFLgdZ/H+lUu1kCgMaZdMM44
 github.com/fulldump/goconfig v1.6.1/go.mod h1:qsSyOhlzhYkL2dJ3KWKxs1hX3Qv58Jzj8pRsIEkHmUY=
 github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
 github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/mvdan/xurls v1.1.0 h1:OpuDelGQ1R1ueQ6sSryzi6P+1RtBpfQHM8fJwlE45ww=
+github.com/mvdan/xurls v1.1.0/go.mod h1:tQlNn3BED8bE/15hnSL2HLkDeLWpNPAwtw7wkEq44oU=

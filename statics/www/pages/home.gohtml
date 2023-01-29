@@ -5,7 +5,7 @@
 	{{ $followers := .followers }}
 
 	{{range $i, $tweet := .tweets  }}
-<article class="tweet" role="article" data-id="{{ .id }}" data-followed="{{index $followers .user_id }}">
+<article class="tweet" role="article" data-id="{{ .id }}" data-followed="{{index $followers .user_id }}" data-links="{{ .message_links | json }}">
 	<a class="avatar" rel="author" href="/user/{{ .nick }}" tabindex="-1">
 		<img src="{{ .picture }}" alt="Avatar de {{ .nick }}">
 	</a>
