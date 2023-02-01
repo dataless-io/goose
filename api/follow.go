@@ -10,36 +10,46 @@ import (
 
 	"goose/glueauth"
 	"goose/inceptiondb"
+	"goose/webpushnotifications"
 )
 
-func follow(ctx context.Context) error {
+func follow(notificator *webpushnotifications.Notificator) any {
+	return func(ctx context.Context) error {
 
-	userID := box.GetUrlParameter(ctx, "user-id")
+		userID := box.GetUrlParameter(ctx, "user-id")
 
-	user := JSON{}
-	findErr := GetInceptionClient(ctx).FindOne("users", inceptiondb.FindQuery{
-		Index: "by id",
-		Value: userID,
-	}, &user)
-	if findErr == io.EOF {
-		// todo: return page "user not found 404"
-		box.GetResponse(ctx).WriteHeader(http.StatusNotFound)
-		return errors.New("user does not exist")
-	}
-	if findErr != nil {
-		// todo: return page "something went wrong"
-		return errors.New("unexpected persistence error")
-	}
+		user := JSON{}
+		findErr := GetInceptionClient(ctx).FindOne("users", inceptiondb.FindQuery{
+			Index: "by id",
+			Value: userID,
+		}, &user)
+		if findErr == io.EOF {
+			// todo: return page "user not found 404"
+			box.GetResponse(ctx).WriteHeader(http.StatusNotFound)
+			return errors.New("user does not exist")
+		}
+		if findErr != nil {
+			// todo: return page "something went wrong"
+			return errors.New("unexpected persistence error")
+		}
 
-	me := glueauth.GetAuth(ctx)
+		me := glueauth.GetAuth(ctx)
 
-	err := GetInceptionClient(ctx).Insert("followers", JSON{
-		"user_id":     userID,
-		"follower_id": me.User.ID,
-		"user":        user,
-	})
-	if err == inceptiondb.ErrorAlreadyExist {
+		err := GetInceptionClient(ctx).Insert("followers", JSON{
+			"user_id":     userID,
+			"follower_id": me.User.ID,
+			"user":        user,
+		})
+		if err == inceptiondb.ErrorAlreadyExist {
+			return nil
+		}
+		if err != nil {
+			// do something
+			return err
+		}
+
+		notificator.Send(userID, me.User.Nick+" te está siguiendo https://goose.blue/user/"+me.User.Nick)
+
 		return nil
 	}
-	return err
 }

@@ -10,15 +10,17 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/SherClockHolmes/webpush-go"
 	"github.com/fulldump/box"
 
 	"goose/glueauth"
 	"goose/inceptiondb"
 	"goose/statics"
 	"goose/streams"
+	"goose/webpushnotifications"
 )
 
-func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string) *box.B {
+func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string, notificator *webpushnotifications.Notificator) *box.B {
 
 	b := box.NewBox()
 
@@ -51,6 +53,51 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 		box.Post(Reply),
 	).WithInterceptors(
 		glueauth.Require,
+	)
+
+	v0.Resource("/push/register").WithInterceptors(
+		glueauth.Require,
+	).WithActions(
+		box.Post(func(ctx context.Context, w http.ResponseWriter, r *http.Request, subscription webpush.Subscription) {
+
+			auth := glueauth.GetAuth(ctx)
+
+			userId := auth.User.ID
+
+			userNotification := struct {
+				UserId        string                 `json:"user_id"`
+				Subscriptions []webpush.Subscription `json:"subscriptions"`
+			}{}
+
+			query := inceptiondb.FindQuery{
+				Index: "by user_id",
+				Value: userId,
+			}
+
+			err := inception.FindOne("users_webpush", query, &userNotification)
+
+			if err == io.EOF {
+				userNotification.UserId = userId
+				userNotification.Subscriptions = []webpush.Subscription{
+					subscription,
+				}
+				insertErr := inception.Insert("users_webpush", userNotification)
+				if insertErr != nil {
+					log.Println("ERROR:", err.Error())
+				}
+
+				return
+			}
+
+			// todo: patch (add new subscription to the list IF NOT PRESENT)
+
+		}),
+	)
+
+	v0.Resource("/push/vapidPublicKey").WithActions(
+		box.Get(func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprint(w, notificator.Config.PublicKey)
+		}),
 	)
 
 	user := v0.Resource("/users/{user-id}")
@@ -89,7 +136,7 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 			glueauth.Require,
 		).
 		WithActions(
-			box.Post(follow),
+			box.Post(follow(notificator)),
 			box.Delete(unfollow),
 		)
 

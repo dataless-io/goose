@@ -1,10 +1,16 @@
+github.com/SherClockHolmes/webpush-go v1.2.0 h1:sGv0/ZWCvb1HUH+izLqrb2i68HuqD/0Y+AmGQfyqKJA=
+github.com/SherClockHolmes/webpush-go v1.2.0/go.mod h1:w6X47YApe/B9wUz2Wh8xukxlyupaxSSEbu6yKJcHN2w=
 github.com/fulldump/biff v1.3.0 h1:FZDqvP8lkrCMDv/oNEH+j2unpuAY+8aXZ44GIvXYOx4=
 github.com/fulldump/biff v1.3.0/go.mod h1:TnBce9eRITmnv3otdmITKeU/zmC08DxotA9s0VcJELg=
 github.com/fulldump/box v0.2.0 h1:T1bflY0hHl0LGa56Cvj6+sLA4picyi/DpPJuwJJ1vII=
 github.com/fulldump/box v0.2.0/go.mod h1:WOwCbBxFaWl2BoWc04WOslZASB8+3vV3DRPJdRSR+/M=
 github.com/fulldump/goconfig v1.6.1 h1:3Xif582G08uAWfiLIYFLgdZ/H+lUu1kCgMaZdMM44WQ=
 github.com/fulldump/goconfig v1.6.1/go.mod h1:qsSyOhlzhYkL2dJ3KWKxs1hX3Qv58Jzj8pRsIEkHmUY=
+github.com/golang-jwt/jwt v3.2.2+incompatible h1:IfV12K8xAKAnZqdXVzCZ+TOjboZ2keLg81eXfW3O+oY=
+github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
 github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/mvdan/xurls v1.1.0 h1:OpuDelGQ1R1ueQ6sSryzi6P+1RtBpfQHM8fJwlE45ww=
 github.com/mvdan/xurls v1.1.0/go.mod h1:tQlNn3BED8bE/15hnSL2HLkDeLWpNPAwtw7wkEq44oU=
+golang.org/x/crypto v0.0.0-20190131182504-b8fe1690c613 h1:MQ/ZZiDsUapFFiMS+vzwXkCTeEKaum+Do5rINYJDmxc=
+golang.org/x/crypto v0.0.0-20190131182504-b8fe1690c613/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=

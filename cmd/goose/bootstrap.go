@@ -1,5 +1,6 @@
 package main
 
+import "C"
 import (
 	"context"
 	"encoding/json"
@@ -13,6 +14,7 @@ import (
 	"goose/api"
 	"goose/inceptiondb"
 	"goose/streams"
+	"goose/webpushnotifications"
 )
 
 func Bootstrap(c Config) (start, stop func() error) {
@@ -28,6 +30,17 @@ func Bootstrap(c Config) (start, stop func() error) {
 		})
 		if err != nil {
 			panic("ensure index 'by id' on users: " + err.Error())
+		}
+	}
+	{
+		err := inception.EnsureIndex("users_webpush", &inceptiondb.IndexOptions{
+			Name:   "by user_id",
+			Type:   "map",
+			Field:  "user_id",
+			Sparse: false,
+		})
+		if err != nil {
+			panic("ensure index 'by user_id' on users_webpush: " + err.Error())
 		}
 	}
 	{
@@ -132,6 +145,8 @@ func Bootstrap(c Config) (start, stop func() error) {
 			panic("ensure stream 'user_follow':" + err.Error())
 		}
 	}
+
+	notificator := webpushnotifications.New(c.WebPush, inception)
 
 	go func() {
 		err := st.Receive("honk_create", "insert_honk", func(data []byte) error {
@@ -263,7 +278,7 @@ func Bootstrap(c Config) (start, stop func() error) {
 		}
 	}()
 
-	a := api.Build(inception, st, c.Statics)
+	a := api.Build(inception, st, c.Statics, notificator)
 
 	// Add compression
 	if c.EnableCompression {

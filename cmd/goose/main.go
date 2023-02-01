@@ -1,22 +1,26 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/SherClockHolmes/webpush-go"
 	"github.com/fulldump/goconfig"
 
 	"goose/inceptiondb"
+	"goose/webpushnotifications"
 )
 
 type Config struct {
 	Addr              string `json:"addr"`
 	Statics           string `json:"statics"`
 	Inception         inceptiondb.Config
-	EnableCompression bool `json:"enable_compression"`
+	EnableCompression bool                        `json:"enable_compression"`
+	WebPush           webpushnotifications.Config `json:"web_push"`
 }
 
 func main() {
@@ -33,6 +37,18 @@ func main() {
 		},
 	}
 	goconfig.Read(&c)
+
+	if c.WebPush.PublicKey == "" || c.WebPush.PrivateKey == "" {
+		log.Println("WARNING: VAPI keys not found, generating new ones. Please update your config")
+		var err error
+		c.WebPush.PrivateKey, c.WebPush.PublicKey, err = webpush.GenerateVAPIDKeys()
+		if err == nil {
+			newKeys, _ := json.Marshal(c.WebPush)
+			log.Println("Add this key to your config:\n" + `"web_push": ` + string(newKeys))
+		} else {
+			log.Println("ERROR: generate vapid key pair:", err.Error())
+		}
+	}
 
 	start, stop := Bootstrap(c)
 
