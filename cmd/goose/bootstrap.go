@@ -268,7 +268,7 @@ func Bootstrap(c Config) (start, stop func() error) {
 				if err != nil {
 					log.Println("ERROR: follow:", relationship.FollowerID, err.Error())
 				}
-				notificator.Send(honk.Nick, honk.Nick+" dice: "+honk.Message)
+				notificator.Send(relationship.FollowerID, honk.Nick+" dice: "+honk.Message)
 			}
 
 			return nil
