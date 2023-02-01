@@ -413,7 +413,7 @@ function sendHonk(f, message, parentHonkId) {
     }
 
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/web-push-worker.js');
+        navigator.serviceWorker.register('/web-push-worker.js?2');
         navigator.serviceWorker.ready
             .then(function(registration) {
                 return registration.pushManager.getSubscription();
