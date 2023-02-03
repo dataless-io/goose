@@ -213,7 +213,14 @@ func Bootstrap(c Config) (start, stop func() error) {
 				if err != nil {
 					log.Println("ERROR: mention:", user.ID, err.Error())
 				}
-				notificator.Send(user.ID, honk.Nick+" dice: "+honk.Message)
+				notificator.Send(user.ID, webpushnotifications.Options{
+					Title: "@" + honk.Nick,
+					Body:  honk.Message,
+					Icon:  honk.Picture,
+					Data: map[string]interface{}{
+						"open": "https://goose.blue/user/" + honk.Nick + "/honk/" + honk.ID,
+					},
+				})
 			}
 
 			return nil
@@ -268,7 +275,14 @@ func Bootstrap(c Config) (start, stop func() error) {
 				if err != nil {
 					log.Println("ERROR: follow:", relationship.FollowerID, err.Error())
 				}
-				notificator.Send(relationship.FollowerID, honk.Nick+" dice: "+honk.Message)
+				notificator.Send(relationship.FollowerID, webpushnotifications.Options{
+					Title: "@" + honk.Nick,
+					Body:  honk.Message,
+					Icon:  honk.Picture,
+					Data: map[string]interface{}{
+						"open": "https://goose.blue/user/" + honk.Nick + "/honk/" + honk.ID,
+					},
+				})
 			}
 
 			return nil

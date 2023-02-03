@@ -48,7 +48,13 @@ func follow(notificator *webpushnotifications.Notificator) any {
 			return err
 		}
 
-		notificator.Send(userID, me.User.Nick+" te está siguiendo https://goose.blue/user/"+me.User.Nick)
+		notificator.Send(userID, webpushnotifications.Options{
+			Title: "@" + me.User.Nick + " te está siguiendo",
+			Icon:  me.User.Picture,
+			Data: map[string]interface{}{
+				"open": "https://goose.blue/user/" + me.User.Nick,
+			},
+		})
 
 		return nil
 	}

@@ -1,6 +1,7 @@
 package webpushnotifications
 
 import (
+	"encoding/json"
 	"io"
 	"log"
 
@@ -28,7 +29,31 @@ func New(config Config, db *inceptiondb.Client) *Notificator {
 	}
 }
 
-func (w *Notificator) Send(userId, message string) error {
+type Options struct {
+	Title              string      `json:"title"`
+	Body               string      `json:"body"`
+	Icon               string      `json:"icon"`
+	Image              string      `json:"image"`
+	Badge              string      `json:"badge"`
+	Data               interface{} `json:"data"`
+	Tag                string      `json:"tag"`
+	RequireInteraction bool        `json:"requireInteraction"`
+	Renotify           bool        `json:"renotify"`
+	Vibrate            []int       `json:"vibrate"`
+	Sound              string      `json:"sound"`
+	Silent             bool        `json:"silent"`
+}
+
+func (w *Notificator) Send(userId string, options any) error {
+	d, err := json.Marshal(options)
+	if err != nil {
+		return err
+	}
+
+	return w.SendRaw(userId, string(d))
+}
+
+func (w *Notificator) SendRaw(userId, message string) error {
 
 	userNotification := struct {
 		UserId        string                 `json:"user_id"`
@@ -46,7 +71,7 @@ func (w *Notificator) Send(userId, message string) error {
 	}
 
 	for _, subscription := range userNotification.Subscriptions {
-		// Send Notification
+		// SendRaw Notification
 		func() {
 			resp, err := webpush.SendNotification([]byte(message), &subscription, &webpush.Options{
 				Subscriber:      "example@example.com", // Do not include "mailto:" // todo: what is this??
