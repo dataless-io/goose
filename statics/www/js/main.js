@@ -254,7 +254,7 @@ function setupNotifications() {
     }
 
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/web-push-worker.js?7');
+        navigator.serviceWorker.register('/web-push-worker.js?8');
         navigator.serviceWorker.ready
             .then(function(registration) {
                 return registration.pushManager.getSubscription();
