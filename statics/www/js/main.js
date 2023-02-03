@@ -72,7 +72,6 @@ document.querySelectorAll("article.tweet").forEach(item => {
 
         links.push({type:'none'});
         links.forEach(link => {
-            console.log(link);
 
             // add plain text:
             const span = document.createElement('span'); // probably should be a text node
@@ -99,7 +98,6 @@ document.querySelectorAll("article.tweet").forEach(item => {
                     break;
                 }
                 case 'hashtag': {
-                    console.log('HT');
                     const a = document.createElement('a');
                     a.href = '/hashtag/'+link.text;
                     a.textContent = message.substring(link.begin, link.end);
@@ -229,7 +227,6 @@ function setupNotifications() {
     function sendSubscription(subscription) {
         let payload = JSON.stringify(subscription);
         fetch('/v0/push/register', {method:'POST', body: payload, headers: {'X-Glue-Authentication':XAuthHeader}});
-        console.log(payload);
     }
 
     function subscribe() {
@@ -257,7 +254,7 @@ function setupNotifications() {
     }
 
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/web-push-worker.js?5');
+        navigator.serviceWorker.register('/web-push-worker.js?6');
         navigator.serviceWorker.ready
             .then(function(registration) {
                 return registration.pushManager.getSubscription();
@@ -416,7 +413,6 @@ function sendHonk(f, message, parentHonkId) {
         }
 
         sendHonk(function (honk) {
-            console.log({honk});
             text_input.value = '';
             update_counter();
             localStorage.removeItem('new-honk');
