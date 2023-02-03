@@ -8,6 +8,8 @@ self.addEventListener('push', event => {
     badge: "https://goose.blue/badge.png",
     icon: "https://goose.blue/avatar.png",
     vibrate: [50, 10, 200, 10, 200, 10, 200, 10, 200],
+    tag: 'social-interaction',
+    renotify: true,
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
@@ -31,7 +33,5 @@ self.addEventListener('notificationclick', (event) => {
     if (clients.openWindow)
       return clients.openWindow('/');
   }));
-
-  this.close();
 });
 
