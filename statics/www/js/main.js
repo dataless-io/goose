@@ -221,6 +221,57 @@ document.querySelectorAll("article.tweet").forEach(item => {
 
 });
 
+function setupNotifications() {
+
+    // const XAuthHeader = '{"user":{"email":"fulanez@gmail.com","id":"user-123","nick":"fulanez","picture":"/avatar.png","Xerror":"unauthorized"}}';
+    let XAuthHeader = JSON.stringify({user});
+
+    function sendSubscription(subscription) {
+        let payload = JSON.stringify(subscription);
+        fetch('/v0/push/register', {method:'POST', body: payload, headers: {'X-Glue-Authentication':XAuthHeader}});
+        console.log(payload);
+    }
+
+    function subscribe() {
+        navigator.serviceWorker.ready
+            .then(function(registration) {
+                const vapidPublicKey = 'BEVpiHG9LmOtwnCLeiWcJMeUDbOWH5vhKX-Xss4F1qA3pWin7WvOF0-z906obEdRbrHZqRpZWRBhQMcjB744i_Y';
+                return registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+                });
+            })
+            .then(function(subscription) {
+                sendSubscription(subscription);
+            })
+            .catch(err => console.error(err));
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+        const base64 = (base64String + padding)
+            .replace(/\-/g, '+')
+            .replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
+    }
+
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/web-push-worker.js?4');
+        navigator.serviceWorker.ready
+            .then(function(registration) {
+                return registration.pushManager.getSubscription();
+            })
+            .then(function(subscription) {
+                if (!subscription) {
+                    subscribe();
+                } else {
+                    sendSubscription(subscription);
+                }
+            });
+    }
+}
+
 let user = {};
 let XAuthHeader = '';
 const avatar = document.createElement('img');
@@ -264,6 +315,7 @@ fetch('/auth/me').then(resp => {
     logout.textContent = "Logout";
     logout.href = '/auth/logout';
     authDiv.append(logout);
+    setupNotifications();
 }).catch( reason => {
     console.log("AUTH:", reason);
     let login = document.createElement('a');
@@ -374,57 +426,4 @@ function sendHonk(f, message, parentHonkId) {
     text_input.addEventListener('keyup', function (){
         localStorage.setItem('new-honk', this.value);
     }, true);
-})();
-
-(function() {
-
-    // const XAuthHeader = '{"user":{"email":"fulanez@gmail.com","id":"user-123","nick":"fulanez","picture":"/avatar.png","Xerror":"unauthorized"}}';
-    let XAuthHeader = JSON.stringify({user});
-
-
-    function sendSubscription(subscription) {
-        let payload = JSON.stringify(subscription);
-        fetch('/v0/push/register', {method:'POST', body: payload, headers: {'X-Glue-Authentication':XAuthHeader}});
-        console.log(payload);
-    }
-
-    function subscribe() {
-        navigator.serviceWorker.ready
-            .then(function(registration) {
-                const vapidPublicKey = 'BEVpiHG9LmOtwnCLeiWcJMeUDbOWH5vhKX-Xss4F1qA3pWin7WvOF0-z906obEdRbrHZqRpZWRBhQMcjB744i_Y';
-                return registration.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-                });
-            })
-            .then(function(subscription) {
-                sendSubscription(subscription);
-            })
-            .catch(err => console.error(err));
-    }
-
-    function urlBase64ToUint8Array(base64String) {
-        const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-        const base64 = (base64String + padding)
-            .replace(/\-/g, '+')
-            .replace(/_/g, '/');
-        const rawData = window.atob(base64);
-        return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
-    }
-
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/web-push-worker.js?2');
-        navigator.serviceWorker.ready
-            .then(function(registration) {
-                return registration.pushManager.getSubscription();
-            })
-            .then(function(subscription) {
-                if (!subscription) {
-                    subscribe();
-                } else {
-                    sendSubscription(subscription);
-                }
-            });
-    }
-
 })();
