@@ -252,6 +252,7 @@ func naiveAccessLog(next box.H) box.H {
 		t0 := time.Now()
 		next(ctx)
 		r := box.GetRequest(ctx)
-		fmt.Println(t0.Format(time.RFC3339Nano), r.Method, r.RequestURI, time.Since(t0))
+		action := box.GetBoxContext(ctx).Action.Name
+		fmt.Println(t0.Format(time.RFC3339Nano), "HTTP", r.Method, r.RequestURI, action, time.Since(t0))
 	}
 }
