@@ -25,6 +25,7 @@ func Build(inception *inceptiondb.Client, st *streams.Streams, staticsDir string
 	b := box.NewBox()
 
 	b.WithInterceptors(
+		naiveAccessLog,
 		InjectInceptionClient(inception),
 		InjectStreams(st),
 		glueauth.Auth,
@@ -244,4 +245,13 @@ func t(name, staticsDir string, filenames ...string) (t *template.Template, err 
 	}
 
 	return
+}
+
+func naiveAccessLog(next box.H) box.H {
+	return func(ctx context.Context) {
+		t0 := time.Now()
+		next(ctx)
+		r := box.GetRequest(ctx)
+		fmt.Println(t0.Format(time.RFC3339Nano), r.Method, r.RequestURI, time.Since(t0))
+	}
 }
