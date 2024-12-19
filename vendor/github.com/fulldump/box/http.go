@@ -82,6 +82,8 @@ func Box2Http(b *B) http.Handler {
 
 		hi := func(ctx context.Context) {
 
+			r = r.WithContext(ctx)
+
 			switch h := handler.(type) {
 			case func(http.ResponseWriter, *http.Request):
 				h(c.Response, r)

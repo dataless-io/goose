@@ -1,11 +1,11 @@
-# github.com/SherClockHolmes/webpush-go v1.2.0
+# github.com/SherClockHolmes/webpush-go v1.3.0
 ## explicit; go 1.13
 github.com/SherClockHolmes/webpush-go
 # github.com/fulldump/biff v1.3.0
 ## explicit; go 1.14
 github.com/fulldump/biff
-# github.com/fulldump/box v0.2.0
-## explicit
+# github.com/fulldump/box v0.4.3
+## explicit; go 1.19
 github.com/fulldump/box
 # github.com/fulldump/goconfig v1.6.1
 ## explicit; go 1.5
@@ -13,12 +13,12 @@ github.com/fulldump/goconfig
 # github.com/golang-jwt/jwt v3.2.2+incompatible
 ## explicit
 github.com/golang-jwt/jwt
-# github.com/google/uuid v1.3.0
+# github.com/google/uuid v1.6.0
 ## explicit
 github.com/google/uuid
 # github.com/mvdan/xurls v1.1.0
 ## explicit
 github.com/mvdan/xurls
-# golang.org/x/crypto v0.0.0-20190131182504-b8fe1690c613
-## explicit
+# golang.org/x/crypto v0.31.0
+## explicit; go 1.20
 golang.org/x/crypto/hkdf
