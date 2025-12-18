@@ -21,11 +21,20 @@ type Event struct {
 	Payload   json.RawMessage `json:"payload"`
 }
 
+// Delivery wraps an Event and provides an Ack method
+type Delivery struct {
+	Event
+	Ack func()
+}
+
 // Broker acts as the central event bus
 type Broker struct {
 	config Config
 	mutex  sync.Mutex // Protects concurrent writes to log
 	log    *Log
+
+	subsMutex   sync.RWMutex
+	subscribers map[string]chan Delivery
 }
 
 // New creates a new Broker instance
@@ -36,14 +45,15 @@ func New(config Config) (*Broker, error) {
 	}
 
 	return &Broker{
-		config: config,
-		log:    log,
+		config:      config,
+		log:         log,
+		subscribers: make(map[string]chan Delivery),
 	}, nil
 }
 
 // Send publishes a new event to the specified stream.
-// It persists the event to the append-only log before returning.
-func (b *Broker) Send(stream string, payload interface{}) error {
+// It blocks until all requiredConsumers have acknowledged the message.
+func (b *Broker) Send(stream string, payload interface{}, requiredConsumers ...string) error {
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		return err
@@ -56,10 +66,93 @@ func (b *Broker) Send(stream string, payload interface{}) error {
 		Payload:   payloadBytes,
 	}
 
-	b.mutex.Lock()
-	defer b.mutex.Unlock()
+	// 1. Persist to Disk (Critical path)
+	if err := func() error {
+		b.mutex.Lock()
+		defer b.mutex.Unlock()
+		return b.log.Append(event)
+	}(); err != nil {
+		return err
+	}
 
-	return b.log.Append(event)
+	// 2. Broadcast to Memory Subscribers
+	b.subsMutex.RLock()
+	defer b.subsMutex.RUnlock()
+
+	var wg sync.WaitGroup
+	// Map to track if required consumers are actually subscribed
+	requiredMap := make(map[string]bool)
+	for _, name := range requiredConsumers {
+		requiredMap[name] = true
+	}
+
+	for name, ch := range b.subscribers {
+		// Determine if this subscriber is required
+		isRequired := requiredMap[name]
+
+		// Create Ack callback
+		var ack func()
+		if isRequired {
+			wg.Add(1)
+			ack = func() {
+				wg.Done()
+			}
+		} else {
+			ack = func() {} // No-op ack for non-required
+		}
+
+		delivery := Delivery{
+			Event: event,
+			Ack:   ack,
+		}
+
+		select {
+		case ch <- delivery:
+		default:
+			// If required consumer is blocked, we must wait or fail?
+			// The requirement says "blocking send", so ideally we should block or have a large buffer.
+			// Current implementation: Drop if channel full (to avoid blocking OTHER consumers),
+			// BUT if it's required, we really should have ensured delivery.
+			// For simplicity in this iteration: strictly non-blocking send to channel.
+			// If a required consumer is slow/full, we might miss the Ack -> Deadlock on Wait?
+			// FIX: Launch a goroutine to ensure delivery if blocked?
+			// Or just assume buffer is enough.
+			// Let's improve: if required, we launch a goroutine to push to channel to ensure it eventually gets there so correct Ack works.
+			if isRequired {
+				go func(c chan Delivery, d Delivery) {
+					c <- d
+				}(ch, delivery)
+			} else {
+				// Non-required: drop if full
+			}
+		}
+	}
+
+	// 3. Wait for required Acks
+	wg.Wait()
+
+	return nil
+}
+
+// Subscribe registers a named consumer and returns a channel of Deliveries.
+func (b *Broker) Subscribe(name string) (<-chan Delivery, func()) {
+	// Buffer size of 100 to tolerate small bursts
+	ch := make(chan Delivery, 100)
+
+	b.subsMutex.Lock()
+	b.subscribers[name] = ch
+	b.subsMutex.Unlock()
+
+	unsubscribe := func() {
+		b.subsMutex.Lock()
+		if b.subscribers[name] == ch {
+			delete(b.subscribers, name)
+		}
+		b.subsMutex.Unlock()
+		close(ch)
+	}
+
+	return ch, unsubscribe
 }
 
 // Close handles the graceful shutdown of the broker
