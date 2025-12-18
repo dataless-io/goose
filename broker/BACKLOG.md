@@ -1,7 +1,7 @@
 # Broker Backlog
 
 ## Actual features
-- [ ] **Append-Only Log Persistence**: Write events to disk sequentially using standard file I/O.
+- [x] **Append-Only Log Persistence**: Write events to disk sequentially using standard file I/O.
 - [ ] **HTTP Stream Transport**: Implement endpoint `/listen` supporting `Transfer-Encoding: chunked` and JSONL format.
 - [ ] **Blocking Send**: Implement `Send` method that blocks until specific subscribers ACK.
 - [ ] **ID-based Serialized Concurrency**: Ensure events with same ID are processed in order, while allowing parallelism for others.
