@@ -34,7 +34,7 @@ func TestBroker_HTTPTransport(t *testing.T) {
 	defer server.Close()
 
 	// Connect Client
-	resp, err := http.Get(server.URL)
+	resp, err := http.Get(server.URL + "/subscribe")
 	if err != nil {
 		t.Fatalf("Failed to connect to server: %v", err)
 	}
@@ -54,8 +54,13 @@ func TestBroker_HTTPTransport(t *testing.T) {
 	// but for this test, we rely on the implementation simplicity)
 	time.Sleep(100 * time.Millisecond)
 
-	// Publish Event
+	// Publish Event via Direct Call (simulate internal or add test for POST /publish)
+	// For this test, we can use the new POST endpoint to verify it works too.
 	go func() {
+		// b.Send("http-test", ...) // Old way
+		// New way via HTTP
+		// ... actually standard test might find it easier to use b.Send directly unless we want to test Post handler.
+		// Let's use b.Send to ensure subscribe works first.
 		b.Send("http-test", map[string]string{"msg": "hello transport"})
 	}()
 

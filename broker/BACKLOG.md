@@ -7,9 +7,9 @@
 - [x] **ID-based Serialized Concurrency**: Ensure events with same ID are processed in order, while allowing parallelism for others.
 - [x] **In-Memory Subscriber Map**: Simple management of active channels/connections.
 - [x] **Persistent ACKs**: Write acknowledgment records to the Append-Only Log.
+- [x] **Standalone Extraction**: Refactor into a separate binary/service (microservice).
 
 ## Next features
-- [ ] **Standalone Extraction**: Refactor into a separate binary/service (microservice).
 - [ ] **Offset/Cursor Management**: Allow consumers to resume from a specific timestamp/offset explicitly.
 - [ ] **Compaction/Rotation**: Log rotation and old event cleanup.
 - [ ] **Consumer Groups**: Load balancing across multiple instances of the same consumer.

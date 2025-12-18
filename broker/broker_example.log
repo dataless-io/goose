@@ -1,2 +1,2 @@
-{"id":"f81a72dc-e996-4f58-9f70-c27b7f8403e2","stream":"example-stream","timestamp":1766086678109553345,"payload":"Hello World"}
-{"type":"ack","id":"786b49ff-32e4-478f-a966-08f2b60ee3e5","target_id":"f81a72dc-e996-4f58-9f70-c27b7f8403e2","consumer":"a","timestamp":1766086678209806531}
+{"id":"35d5d05e-530b-4397-95de-1c0ed0cfefd0","stream":"example-stream","timestamp":1766086887010125071,"payload":"Hello World"}
+{"type":"ack","id":"519dcb87-a2d0-4ea8-8049-7e4ce4a8e310","target_id":"35d5d05e-530b-4397-95de-1c0ed0cfefd0","consumer":"a","timestamp":1766086887110321043}
