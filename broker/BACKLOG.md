@@ -4,7 +4,7 @@
 - [x] **Append-Only Log Persistence**: Write events to disk sequentially using standard file I/O.
 - [x] **HTTP Stream Transport**: Implement endpoint `/listen` supporting `Transfer-Encoding: chunked` and JSONL format.
 - [x] **Blocking Send**: Implement `Send` method that blocks until specific subscribers ACK.
-- [ ] **ID-based Serialized Concurrency**: Ensure events with same ID are processed in order, while allowing parallelism for others.
+- [x] **ID-based Serialized Concurrency**: Ensure events with same ID are processed in order, while allowing parallelism for others.
 - [x] **In-Memory Subscriber Map**: Simple management of active channels/connections.
 
 ## Next features
