@@ -12,10 +12,12 @@ import (
 // while consumer 'b' processes events asynchronously.
 func Example() {
 	// 1. Setup Broker
-	tmpFile, _ := os.CreateTemp("", "broker_example_*.log")
+
+	tmpFile, _ := os.Create("broker_example.log")
+	// tmpFile, _ := os.CreateTemp("", "broker_example_*.log")
 	tmpPath := tmpFile.Name()
 	tmpFile.Close()
-	defer os.Remove(tmpPath)
+	//defer os.Remove(tmpPath)
 
 	b, _ := broker.New(broker.Config{PersistencePath: tmpPath})
 	defer b.Close()

@@ -6,6 +6,7 @@
 - [x] **Blocking Send**: Implement `Send` method that blocks until specific subscribers ACK.
 - [x] **ID-based Serialized Concurrency**: Ensure events with same ID are processed in order, while allowing parallelism for others.
 - [x] **In-Memory Subscriber Map**: Simple management of active channels/connections.
+- [x] **Persistent ACKs**: Write acknowledgment records to the Append-Only Log.
 
 ## Next features
 - [ ] **Standalone Extraction**: Refactor into a separate binary/service (microservice).

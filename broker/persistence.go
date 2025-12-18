@@ -11,6 +11,15 @@ type Log struct {
 	encoder *json.Encoder
 }
 
+// AckEntry represents an acknowledgment of an event by a consumer
+type AckEntry struct {
+	Type      string `json:"type"`      // "ack"
+	ID        string `json:"id"`        // Unique ID of the ack record
+	TargetID  string `json:"target_id"` // ID of the event being acked
+	Consumer  string `json:"consumer"`
+	Timestamp int64  `json:"timestamp"`
+}
+
 // openLog opens or creates the file for appending events
 func openLog(path string) (*Log, error) {
 	// Open file in Append mode, Create if not exists, Write only
@@ -25,9 +34,9 @@ func openLog(path string) (*Log, error) {
 	}, nil
 }
 
-// Append writes an event to the end of the file
-func (l *Log) Append(event Event) error {
-	return l.encoder.Encode(event)
+// Append writes an entry to the end of the file
+func (l *Log) Append(entry interface{}) error {
+	return l.encoder.Encode(entry)
 }
 
 // Close closes the underlying file handle
