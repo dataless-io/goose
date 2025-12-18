@@ -24,7 +24,7 @@ func Example() {
 
 	// 2. Setup Critical Consumer 'a'
 	// This consumer MUST acknowledge events for the producer to continue.
-	streamA, cancelA := b.Subscribe("a")
+	streamA, cancelA := b.Subscribe("a", "")
 	defer cancelA()
 
 	go func() {
@@ -38,7 +38,7 @@ func Example() {
 
 	// 3. Setup Non-Critical Consumer 'b'
 	// This consumer receives events but the producer DOES NOT wait for it.
-	streamB, cancelB := b.Subscribe("b")
+	streamB, cancelB := b.Subscribe("b", "")
 	defer cancelB()
 
 	go func() {

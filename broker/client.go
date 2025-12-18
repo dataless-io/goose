@@ -54,12 +54,9 @@ func (c *Client) Send(stream string, payload interface{}, requiredConsumers ...s
 }
 
 // Subscribe listens to the remote broker stream.
-// Returns a channel of Events (Delivery is implicit as Ack is handled by the server for now, or client logic).
-// Note: The generic 'Delivery' struct in broker package has Ack(), but for remote client, the server does auto-ack
-// when writing to stream (as per current http_transport implementation).
-// So client just receives Events.
-func (c *Client) Subscribe(consumerName string) (<-chan Event, func(), error) {
-	url := fmt.Sprintf("%s/subscribe?id=%s", c.BaseURL, consumerName)
+// Returns a channel of Events.
+func (c *Client) Subscribe(consumerName string, fromID string) (<-chan Event, func(), error) {
+	url := fmt.Sprintf("%s/subscribe?id=%s&from_id=%s", c.BaseURL, consumerName, fromID)
 	resp, err := c.HTTPClient.Get(url)
 	if err != nil {
 		return nil, nil, err

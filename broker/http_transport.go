@@ -29,8 +29,12 @@ func NewHandler(b *Broker) http.Handler {
 		if queryID := r.URL.Query().Get("id"); queryID != "" {
 			clientID = queryID
 		}
+		fromID := r.URL.Query().Get("from_id")
+		if fromID == "" {
+			fromID = r.Header.Get("Last-Event-ID")
+		}
 
-		events, unsubscribe := b.Subscribe(clientID)
+		events, unsubscribe := b.Subscribe(clientID, fromID)
 		defer unsubscribe()
 
 		// 3. Flush headers immediately to establish stream

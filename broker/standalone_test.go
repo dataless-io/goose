@@ -26,7 +26,7 @@ func TestStandalone_Integration(t *testing.T) {
 	client := broker.NewClient(server.URL)
 
 	// 3. Subscribe
-	ch, cancel, err := client.Subscribe("client-A")
+	ch, cancel, err := client.Subscribe("client-A", "")
 	if err != nil {
 		t.Fatalf("Subscribe failed: %v", err)
 	}

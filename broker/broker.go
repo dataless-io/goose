@@ -151,24 +151,93 @@ func (b *Broker) Send(stream string, payload interface{}, requiredConsumers ...s
 }
 
 // Subscribe registers a named consumer and returns a channel of Deliveries.
-func (b *Broker) Subscribe(name string) (<-chan Delivery, func()) {
-	// Buffer size of 100 to tolerate small bursts
-	ch := make(chan Delivery, 100)
+// If fromID is specified, it replays history starting after that ID.
+func (b *Broker) Subscribe(name string, fromID string) (<-chan Delivery, func()) {
+	// liveCh receives new events from Send()
+	liveCh := make(chan Delivery, 100)
+	// userCh is what (ordered) events are sent to
+	userCh := make(chan Delivery, 100)
 
 	b.subsMutex.Lock()
-	b.subscribers[name] = ch
+	b.subscribers[name] = liveCh
 	b.subsMutex.Unlock()
 
+	// Context/Cancel for the pump goroutine
+	done := make(chan struct{})
+
+	go func() {
+		defer close(userCh)
+
+		// 1. Replay History (if needed)
+		if fromID != "" {
+			// We need to capture the current state of log to avoid duplicates
+			// created by live events arriving while we replay.
+			// Ideally we stop reading at the current file end.
+			// The simpler way: We trust Replay to read what's on disk NOW.
+			// New events are in liveCh.
+			// There is a race: 'Send' writes to disk AND pushes to liveCh.
+			// If Replay reads the new disk write, we get duplicate.
+			// Fix: Use Replay with a "StopAt" offset (not implemented yet, but let's assume valid for now or approximate).
+			// Hack: Read everything. Keep track of IDs seen in Replay.
+			// When switching to liveCh, drop if seen? Memory cost.
+			//
+			// BETTER: io.LimitReader in persistence as planned.
+			// We need `b.log` to expose size.
+			currentSize := b.log.Size()
+
+			// Use a specialized channel for replay that sends Events
+			replayCh := make(chan Event)
+			go func() {
+				defer close(replayCh)
+				b.log.Replay(fromID, replayCh, currentSize)
+			}()
+
+			for event := range replayCh {
+				select {
+				case userCh <- Delivery{Event: event, Ack: func() {}}: // Historical events auto-acked? or no-op ack?
+				case <-done:
+					return
+				}
+			}
+		}
+
+		// 2. Stream Live
+		for {
+			select {
+			case d := <-liveCh:
+				// Verify duplication?
+				// If we limited Replay to `currentSize`, and `Send` appends after,
+				// theoretically no overlap IF `Send` does Write then Push.
+				// If `Send` does Push then Write? -> `persistence` ensures Write first.
+				// So if we LimitReader to currentSize, we are safe.
+				select {
+				case userCh <- d:
+				case <-done:
+					return
+				}
+			case <-done:
+				return
+			}
+		}
+	}()
+
 	unsubscribe := func() {
+		close(done) // Stop pump
 		b.subsMutex.Lock()
-		if b.subscribers[name] == ch {
+		if b.subscribers[name] == liveCh {
 			delete(b.subscribers, name)
 		}
 		b.subsMutex.Unlock()
-		close(ch)
+		// liveCh will be GC'd (sender might block? Send uses 'default' select for non-required, what about required?)
+		// If required, Send might block on liveCh if we stop reading.
+		// So we should drain liveCh?
+		// Or just close it? Closing channel that publisher writes to -> panic.
+		// We remove from map, so no new writes.
+		// Existing writes in flight?
+		// Map lock protects removal.
 	}
 
-	return ch, unsubscribe
+	return userCh, unsubscribe
 }
 
 // Close handles the graceful shutdown of the broker

@@ -24,7 +24,7 @@ func TestBroker_PersistentAck(t *testing.T) {
 	defer b.Close()
 
 	consumerName := "critical-logger"
-	events, _ := b.Subscribe(consumerName)
+	events, _ := b.Subscribe(consumerName, "")
 
 	// Consumer routine check
 	go func() {

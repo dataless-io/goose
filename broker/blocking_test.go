@@ -23,7 +23,7 @@ func TestBroker_BlockingSend(t *testing.T) {
 
 	// Consumidor Lento (Bloqueante)
 	slowConsumerName := "slow-processor"
-	events, _ := b.Subscribe(slowConsumerName)
+	events, _ := b.Subscribe(slowConsumerName, "")
 
 	// Lanza rutina que procesa lee el evento pero tarde en hacer Ack
 	consumerAcked := make(chan bool)
@@ -72,7 +72,7 @@ func TestBroker_NonBlocking_IfConsumerNotRequired(t *testing.T) {
 
 	// Consumidor Lento
 	slowConsumerName := "slow-processor-ignored"
-	events, _ := b.Subscribe(slowConsumerName)
+	events, _ := b.Subscribe(slowConsumerName, "")
 
 	go func() {
 		<-events
