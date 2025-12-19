@@ -1,12 +1,13 @@
 module goose
 
-go 1.19
+go 1.25
 
 require (
 	github.com/SherClockHolmes/webpush-go v1.3.0
 	github.com/fulldump/biff v1.3.0
 	github.com/fulldump/box v0.4.3
 	github.com/fulldump/goconfig v1.6.1
+	github.com/go-json-experiment/json v0.0.0-20251027170946-4849db3c2f7e
 	github.com/google/uuid v1.6.0
 	github.com/mvdan/xurls v1.1.0
 )

@@ -1,26 +1,29 @@
 package broker
 
 import (
-	"encoding/json"
 	"sync"
 	"time"
+
+	json "github.com/go-json-experiment/json"
+	"github.com/go-json-experiment/json/jsontext"
 
 	"github.com/google/uuid"
 )
 
 // Config holds the configuration for the broker
 type Config struct {
-	PersistencePath string
-	MaxLogSize      int64 // Bytes. Default 10MB approx.
-	MaxRetainedLogs int   // Count. Default 5.
+	PersistencePath   string
+	MaxLogSize        int64 // Bytes. Default 10MB approx.
+	MaxRetainedLogs   int   // Count. Default 5.
+	UnsafeBatchWrites bool  // If true, relies on OS buffer (faster, riskier).
 }
 
 // Event represents a single unit of data in the system
 type Event struct {
-	ID        string          `json:"id"`
-	Stream    string          `json:"stream"`
-	Timestamp int64           `json:"timestamp"`
-	Payload   json.RawMessage `json:"payload"`
+	ID        string         `json:"id"`
+	Stream    string         `json:"stream"`
+	Timestamp int64          `json:"timestamp"`
+	Payload   jsontext.Value `json:"payload"`
 }
 
 // Delivery wraps an Event and provides an Ack method
@@ -48,7 +51,7 @@ func New(config Config) (*Broker, error) {
 		config.MaxRetainedLogs = 5
 	}
 
-	l, err := openLog(config.PersistencePath, config.MaxLogSize, config.MaxRetainedLogs)
+	l, err := openLog(config.PersistencePath, config.MaxLogSize, config.MaxRetainedLogs, config.UnsafeBatchWrites)
 	if err != nil {
 		return nil, err
 	}

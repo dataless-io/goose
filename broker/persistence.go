@@ -2,22 +2,24 @@ package broker
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"time"
+
+	json "github.com/go-json-experiment/json"
 )
 
 // Log handles the append-only file operations
 type Log struct {
 	path        string
 	file        *os.File
-	encoder     *json.Encoder
+	writer      *bufio.Writer
 	maxSize     int64
 	maxRetained int
+	unsafeBatch bool
 }
 
 // AckEntry represents an acknowledgment of an event by a consumer
@@ -30,19 +32,22 @@ type AckEntry struct {
 }
 
 // openLog opens or creates the file for appending events
-func openLog(path string, maxSize int64, maxRetained int) (*Log, error) {
+func openLog(path string, maxSize int64, maxRetained int, unsafeBatch bool) (*Log, error) {
 	// Open file in Append mode, Create if not exists, Write only
 	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, err
 	}
 
+	writer := bufio.NewWriter(file)
+
 	return &Log{
 		path:        path,
 		file:        file,
-		encoder:     json.NewEncoder(file),
+		writer:      writer,
 		maxSize:     maxSize,
 		maxRetained: maxRetained,
+		unsafeBatch: unsafeBatch,
 	}, nil
 }
 
@@ -55,11 +60,29 @@ func (l *Log) Append(entry interface{}) error {
 			return err
 		}
 	}
-	return l.encoder.Encode(entry)
+
+	bytes, err := json.Marshal(entry)
+	if err != nil {
+		return err
+	}
+	if _, err := l.writer.Write(bytes); err != nil {
+		return err
+	}
+	if err := l.writer.WriteByte('\n'); err != nil {
+		return err
+	}
+
+	if !l.unsafeBatch {
+		return l.writer.Flush()
+	}
+	return nil
 }
 
 // Rotate closes current file, renames it, and opens a new one
 func (l *Log) Rotate() error {
+	// Flush before close (just in case)
+	l.writer.Flush()
+
 	// Close current
 	if err := l.file.Close(); err != nil {
 		return err
@@ -78,7 +101,7 @@ func (l *Log) Rotate() error {
 		return err
 	}
 	l.file = file
-	l.encoder = json.NewEncoder(file)
+	l.writer = bufio.NewWriter(file)
 
 	// Cleanup
 	go l.cleanup() // Async cleanup

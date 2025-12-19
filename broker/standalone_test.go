@@ -1,11 +1,12 @@
 package broker_test
 
 import (
-	"encoding/json"
 	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
+
+	json "github.com/go-json-experiment/json"
 
 	"goose/broker"
 )

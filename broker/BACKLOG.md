@@ -10,6 +10,7 @@
 - [x] **Standalone Extraction**: Refactor into a separate binary/service (microservice).
 - [x] **Offset/Cursor Management**: Allow consumers to resume from a specific timestamp/offset explicitly.
 - [x] **Compaction/Rotation**: Log rotation and old event cleanup.
+- [x] **Performance Optimization**: Benchmark and optimize throughput (switched to `jsonv2`).
 
 ## Next features
 - [ ] **Consumer Groups**: Load balancing across multiple instances of the same consumer.

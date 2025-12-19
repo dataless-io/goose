@@ -10,6 +10,14 @@ github.com/fulldump/box
 # github.com/fulldump/goconfig v1.6.1
 ## explicit; go 1.5
 github.com/fulldump/goconfig
+# github.com/go-json-experiment/json v0.0.0-20251027170946-4849db3c2f7e
+## explicit; go 1.25
+github.com/go-json-experiment/json
+github.com/go-json-experiment/json/internal
+github.com/go-json-experiment/json/internal/jsonflags
+github.com/go-json-experiment/json/internal/jsonopts
+github.com/go-json-experiment/json/internal/jsonwire
+github.com/go-json-experiment/json/jsontext
 # github.com/golang-jwt/jwt v3.2.2+incompatible
 ## explicit
 github.com/golang-jwt/jwt

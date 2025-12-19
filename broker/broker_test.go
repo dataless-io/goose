@@ -2,10 +2,11 @@ package broker_test
 
 import (
 	"bufio"
-	"encoding/json"
 	"os"
 	"strings"
 	"testing"
+
+	json "github.com/go-json-experiment/json"
 
 	"goose/broker"
 )

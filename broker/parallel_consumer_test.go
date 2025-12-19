@@ -1,10 +1,12 @@
 package broker_test
 
 import (
-	"encoding/json"
 	"sync"
 	"testing"
 	"time"
+
+	json "github.com/go-json-experiment/json"
+	"github.com/go-json-experiment/json/jsontext"
 
 	"goose/broker"
 )
@@ -34,11 +36,11 @@ func TestParallelConsumer_Serialization(t *testing.T) {
 	id := "same-id"
 
 	ch <- broker.Delivery{
-		Event: broker.Event{ID: id, Payload: json.RawMessage(`"first"`)},
+		Event: broker.Event{ID: id, Payload: jsontext.Value(`"first"`)},
 		Ack:   func() {},
 	}
 	ch <- broker.Delivery{
-		Event: broker.Event{ID: id, Payload: json.RawMessage(`"second"`)},
+		Event: broker.Event{ID: id, Payload: jsontext.Value(`"second"`)},
 		Ack:   func() {},
 	}
 	close(ch)
@@ -74,11 +76,11 @@ func TestParallelConsumer_Parallelism(t *testing.T) {
 
 	// Send 2 events, different IDs
 	ch <- broker.Delivery{
-		Event: broker.Event{ID: "id-1", Payload: json.RawMessage(`"data"`)},
+		Event: broker.Event{ID: "id-1", Payload: jsontext.Value(`"data"`)},
 		Ack:   func() {},
 	}
 	ch <- broker.Delivery{
-		Event: broker.Event{ID: "id-2", Payload: json.RawMessage(`"data"`)},
+		Event: broker.Event{ID: "id-2", Payload: jsontext.Value(`"data"`)},
 		Ack:   func() {},
 	}
 
