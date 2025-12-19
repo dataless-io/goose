@@ -11,6 +11,7 @@
 - [x] **Offset/Cursor Management**: Allow consumers to resume from a specific timestamp/offset explicitly.
 - [x] **Compaction/Rotation**: Log rotation and old event cleanup.
 - [x] **Performance Optimization**: Benchmark and optimize throughput (switched to `jsonv2`).
+- [x] **Broker Client**: Go package `broker/brokerclient` for HTTP interaction (Benchmark: ~130k ops/sec).
 
 ## Next features
 - [ ] **Consumer Groups**: Load balancing across multiple instances of the same consumer.

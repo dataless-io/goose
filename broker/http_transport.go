@@ -1,8 +1,10 @@
 package broker
 
 import (
-	"encoding/json"
 	"net/http"
+
+	json "github.com/go-json-experiment/json"
+	"github.com/go-json-experiment/json/jsontext"
 )
 
 // NewHandler creates a new HTTP handler that serves the broker's event stream.
@@ -45,7 +47,7 @@ func NewHandler(b *Broker) http.Handler {
 		}
 		flusher.Flush()
 
-		encoder := json.NewEncoder(w)
+		encoder := jsontext.NewEncoder(w)
 
 		// 4. Stream Loop
 		ctx := r.Context()
@@ -56,9 +58,10 @@ func NewHandler(b *Broker) http.Handler {
 				return
 			case delivery := <-events:
 				// Write JSON Line
-				if err := encoder.Encode(delivery.Event); err != nil {
+				if err := json.MarshalEncode(encoder, delivery.Event); err != nil {
 					return
 				}
+				w.Write([]byte{'\n'}) // Force newline for NDJSON
 				flusher.Flush()
 
 				// Ack the delivery (we consider it delivered once written to stream)
@@ -80,7 +83,7 @@ func NewHandler(b *Broker) http.Handler {
 			RequiredConsumers []string    `json:"required_consumers"`
 		}
 
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		if err := json.UnmarshalRead(r.Body, &req); err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
