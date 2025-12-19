@@ -9,9 +9,9 @@
 - [x] **Persistent ACKs**: Write acknowledgment records to the Append-Only Log.
 - [x] **Standalone Extraction**: Refactor into a separate binary/service (microservice).
 - [x] **Offset/Cursor Management**: Allow consumers to resume from a specific timestamp/offset explicitly.
+- [x] **Compaction/Rotation**: Log rotation and old event cleanup.
 
 ## Next features
-- [ ] **Compaction/Rotation**: Log rotation and old event cleanup.
 - [ ] **Consumer Groups**: Load balancing across multiple instances of the same consumer.
 
 ## Will not do these features

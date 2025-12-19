@@ -11,6 +11,8 @@ import (
 // Config holds the configuration for the broker
 type Config struct {
 	PersistencePath string
+	MaxLogSize      int64 // Bytes. Default 10MB approx.
+	MaxRetainedLogs int   // Count. Default 5.
 }
 
 // Event represents a single unit of data in the system
@@ -39,14 +41,21 @@ type Broker struct {
 
 // New creates a new Broker instance
 func New(config Config) (*Broker, error) {
-	log, err := openLog(config.PersistencePath)
+	if config.MaxLogSize == 0 {
+		config.MaxLogSize = 10 * 1024 * 1024 // 10MB
+	}
+	if config.MaxRetainedLogs == 0 {
+		config.MaxRetainedLogs = 5
+	}
+
+	l, err := openLog(config.PersistencePath, config.MaxLogSize, config.MaxRetainedLogs)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Broker{
 		config:      config,
-		log:         log,
+		log:         l,
 		subscribers: make(map[string]chan Delivery),
 	}, nil
 }
