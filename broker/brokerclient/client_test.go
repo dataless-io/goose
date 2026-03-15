@@ -14,25 +14,37 @@ import (
 
 func TestClient_Integration(t *testing.T) {
 	// 1. Setup Broker
-	tmpFile, err := os.CreateTemp("", "client_test_*.log")
+	tmpDir, err := os.MkdirTemp("", "client_test")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(tmpFile.Name())
-	tmpFile.Close()
+	defer os.RemoveAll(tmpDir)
 
-	b, err := broker.New(broker.Config{PersistencePath: tmpFile.Name()})
+	// 1. Setup Manager
+	manager, err := broker.NewManager(tmpDir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer b.Close()
+	defer manager.Close()
+
+	if _, err := manager.CreateBroker("default"); err != nil {
+		t.Fatal(err)
+	}
 
 	// 2. Setup HTTP Server
-	handler := broker.NewHandler(b)
+	handler := broker.NewHandler(manager)
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	// 3. Setup Client
+	// 3. Setup Client (pointing to default broker for backward compat or explicit?)
+	// Client needs update to handle new URL structure. For now, testing integration implies client update.
+	// But client update is NEXT task.
+	// To make this compile, I need to update client.go FIRST or patch this test to wait.
+	// I will update client.go in parallel/next. For now let's make this test compile even if it fails runtime
+	// until client is updated.
+	// Actually, client.New(url) just sets base. If base is server.URL, client does POST /publish.
+	// Server expects POST /brokers/{name}/publish.
+	// So client needs update.
 	client := brokerclient.New(server.URL)
 
 	// 4. Subscribe

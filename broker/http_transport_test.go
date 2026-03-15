@@ -14,28 +14,34 @@ import (
 )
 
 func TestBroker_HTTPTransport(t *testing.T) {
-	// Setup Token Broker
-	tmpFile, err := os.CreateTemp("", "broker_http_test_*.log")
+	// 1. Setup Broker Manager
+	tmpDir, err := os.MkdirTemp("", "broker_http_test")
 	if err != nil {
 		t.Fatal(err)
 	}
-	tmpPath := tmpFile.Name()
-	tmpFile.Close()
-	defer os.Remove(tmpPath)
+	defer os.RemoveAll(tmpDir)
 
-	b, err := broker.New(broker.Config{PersistencePath: tmpPath})
+	// Setup Manager
+	manager, err := broker.NewManager(tmpDir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer b.Close()
+	defer manager.Close()
+
+	// Create Broker
+	b, err := manager.CreateBroker("test-broker")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Setup Server
-	handler := broker.NewHandler(b)
+	handler := broker.NewHandler(manager)
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
 	// Connect Client
-	resp, err := http.Get(server.URL + "/subscribe")
+	// Note: URL must now include /brokers/test-broker/
+	resp, err := http.Get(server.URL + "/brokers/test-broker/subscribe")
 	if err != nil {
 		t.Fatalf("Failed to connect to server: %v", err)
 	}

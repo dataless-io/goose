@@ -24,15 +24,21 @@ func main() {
 	log.Printf("Persistence Path: %s", persistencePath)
 	log.Printf("Listening on port: %s", port)
 
-	b, err := broker.New(broker.Config{
-		PersistencePath: persistencePath,
-	})
+	// 1. Initialize Manager
+	manager, err := broker.NewManager(persistencePath)
 	if err != nil {
-		log.Fatalf("Failed to initialize broker: %v", err)
+		log.Fatalf("Failed to initialize manager: %v", err)
 	}
-	defer b.Close()
+	defer manager.Close()
 
-	handler := broker.NewHandler(b)
+	// 2. Create Default Broker (optional, but good for quickstart)
+	if _, err := manager.CreateBroker("default"); err != nil {
+		log.Printf("Default broker might already exist or failed: %v", err)
+	} else {
+		log.Println("Created 'default' broker")
+	}
+
+	handler := broker.NewHandler(manager)
 
 	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		log.Fatalf("Server failed: %v", err)

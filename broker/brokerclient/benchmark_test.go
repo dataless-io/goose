@@ -13,25 +13,28 @@ import (
 
 func BenchmarkClient_Send(b *testing.B) {
 	// 1. Setup Broker
-	tmpFile, err := os.CreateTemp("", "bench_client_send_*.log")
+	tmpDir, err := os.MkdirTemp("", "bench_client_send")
 	if err != nil {
 		b.Fatal(err)
 	}
-	defer os.Remove(tmpFile.Name())
-	tmpPath := tmpFile.Name()
-	tmpFile.Close()
+	defer os.RemoveAll(tmpDir)
 
 	// Use minimal extensive config for performance (UnsafeBatchWrites=true if we want to test network more than disk)
 	// But let's test realistic persistence: UnsafeBatchWrites=false by default, but maybe true for max throughput test.
 	// Let's stick to default for now to be fair.
-	br, err := broker.New(broker.Config{PersistencePath: tmpPath, UnsafeBatchWrites: true})
+	// 2. Setup Manager
+	manager, err := broker.NewManager(tmpDir)
 	if err != nil {
 		b.Fatal(err)
 	}
-	defer br.Close()
+	defer manager.Close()
+
+	if _, err := manager.CreateBroker("default"); err != nil {
+		b.Fatal(err)
+	}
 
 	// 2. Setup HTTP Server
-	handler := broker.NewHandler(br)
+	handler := broker.NewHandler(manager)
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
@@ -57,23 +60,25 @@ func BenchmarkClient_EndToEnd(b *testing.B) {
 	// Benchmarks usually measure ops/sec of the loop body.
 	// We can use a separate goroutine for consuming and count received events.
 
-	// 1. Setup Broker
-	tmpFile, err := os.CreateTemp("", "bench_client_e2e_*.log")
+	// 1. Setup Manager
+	tmpDir, err := os.MkdirTemp("", "bench_client_e2e")
 	if err != nil {
 		b.Fatal(err)
 	}
-	defer os.Remove(tmpFile.Name())
-	tmpPath := tmpFile.Name()
-	tmpFile.Close()
+	defer os.RemoveAll(tmpDir)
 
-	br, err := broker.New(broker.Config{PersistencePath: tmpPath, UnsafeBatchWrites: true})
-	if err != nil {
+	var manager *broker.BrokerManager
+	if manager, err = broker.NewManager(tmpDir); err != nil {
 		b.Fatal(err)
 	}
-	defer br.Close()
+	defer manager.Close()
+
+	if _, err := manager.CreateBroker("default"); err != nil {
+		b.Fatal(err)
+	}
 
 	// 2. Setup HTTP Server
-	handler := broker.NewHandler(br)
+	handler := broker.NewHandler(manager)
 	server := httptest.NewServer(handler)
 	defer server.Close()
 

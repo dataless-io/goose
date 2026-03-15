@@ -15,13 +15,14 @@ import (
 	"goose/broker"
 )
 
-// Client is a HTTP client for the Goose Broker
+// Client is a HTTP client for the Goose Broker Service
 type Client struct {
 	baseURL    string
 	httpClient *http.Client
+	headers    map[string]string
 }
 
-// New creates a new broker client
+// New creates a new broker service client
 func New(baseURL string) *Client {
 	transport := &http.Transport{
 		MaxIdleConns:        1000,
@@ -33,13 +34,103 @@ func New(baseURL string) *Client {
 		baseURL: baseURL,
 		httpClient: &http.Client{
 			Transport: transport,
-			Timeout:   10 * time.Second, // Timeout for Send commands
+			Timeout:   10 * time.Second,
 		},
+		headers: make(map[string]string),
 	}
 }
 
-// Send publishes an event to the stream
+// WithHeader adds a default header to all requests
+func (c *Client) WithHeader(key, value string) *Client {
+	c.headers[key] = value
+	return c
+}
+
+// CreateBroker creates a new broker with the given name
+func (c *Client) CreateBroker(name string) error {
+	reqBody := struct {
+		Name string `json:"name"`
+	}{Name: name}
+
+	data, err := json.Marshal(reqBody)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", c.baseURL+"/brokers", bytes.NewReader(data))
+	if err != nil {
+		return err
+	}
+	c.injectHeaders(req)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("create broker failed (%d): %s", resp.StatusCode, string(body))
+	}
+	return nil
+}
+
+// DeleteBroker deletes a broker
+func (c *Client) DeleteBroker(name string) error {
+	req, err := http.NewRequest("DELETE", c.baseURL+"/brokers/"+name, nil)
+	if err != nil {
+		return err
+	}
+	c.injectHeaders(req)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("delete broker failed (%d): %s", resp.StatusCode, string(body))
+	}
+	return nil
+}
+
+// Broker returns a client scoped to a specific broker
+func (c *Client) Broker(name string) *BrokerClient {
+	return &BrokerClient{
+		client:     c,
+		brokerName: name,
+	}
+}
+
+// injectHeaders adds configured headers to the request
+func (c *Client) injectHeaders(req *http.Request) {
+	for k, v := range c.headers {
+		req.Header.Set(k, v)
+	}
+}
+
+// Send is a convenience method for the "default" broker (backward compatibility)
 func (c *Client) Send(stream string, payload interface{}, requiredConsumers ...string) error {
+	return c.Broker("default").Send(stream, payload, requiredConsumers...)
+}
+
+// Subscribe is a convenience method for the "default" broker
+func (c *Client) Subscribe(stream, consumerID, fromID string) (<-chan Delivery, func()) {
+	return c.Broker("default").Subscribe(stream, consumerID, fromID)
+}
+
+// BrokerClient handles operations on a specific broker
+type BrokerClient struct {
+	client     *Client
+	brokerName string
+}
+
+// Send publishes an event to the stream on this broker
+func (b *BrokerClient) Send(stream string, payload interface{}, requiredConsumers ...string) error {
 	reqBody := struct {
 		Stream            string      `json:"stream"`
 		Payload           interface{} `json:"payload"`
@@ -55,7 +146,15 @@ func (c *Client) Send(stream string, payload interface{}, requiredConsumers ...s
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := c.httpClient.Post(c.baseURL+"/publish", "application/json", bytes.NewReader(data))
+	url := fmt.Sprintf("%s/brokers/%s/publish", b.client.baseURL, b.brokerName)
+	req, err := http.NewRequest("POST", url, bytes.NewReader(data))
+	if err != nil {
+		return err
+	}
+	b.client.injectHeaders(req)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := b.client.httpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to post event: %w", err)
 	}
@@ -76,8 +175,7 @@ type Delivery struct {
 }
 
 // Subscribe connects to the broker and streams events.
-// It returns a channel of Deliveries and a CancelFunc to stop the subscription.
-func (c *Client) Subscribe(stream, consumerID, fromID string) (<-chan Delivery, func()) {
+func (b *BrokerClient) Subscribe(stream, consumerID, fromID string) (<-chan Delivery, func()) {
 	ch := make(chan Delivery, 100)
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -85,7 +183,7 @@ func (c *Client) Subscribe(stream, consumerID, fromID string) (<-chan Delivery, 
 		defer close(ch)
 
 		// Build URL with params
-		u, _ := url.Parse(c.baseURL + "/subscribe")
+		u, _ := url.Parse(fmt.Sprintf("%s/brokers/%s/subscribe", b.client.baseURL, b.brokerName))
 		q := u.Query()
 		if consumerID != "" {
 			q.Set("id", consumerID)
@@ -101,17 +199,15 @@ func (c *Client) Subscribe(stream, consumerID, fromID string) (<-chan Delivery, 
 			fmt.Printf("Client subscribe error: %v\n", err)
 			return
 		}
+		b.client.injectHeaders(req)
 
 		// Use a custom long-timeout client/transport implies streaming?
-		// NOTE: default httpClient has 10s timeout which is BAD for streaming.
-		// We need a separate client or transport for default timeout.
 		streamClient := &http.Client{
 			Timeout: 0, // No timeout for streaming
 		}
 
 		resp, err := streamClient.Do(req)
 		if err != nil {
-			// Context canceled is normal
 			if ctx.Err() == nil {
 				fmt.Printf("Client request failed: %v\n", err)
 			}
@@ -135,28 +231,18 @@ func (c *Client) Subscribe(stream, consumerID, fromID string) (<-chan Delivery, 
 			var event broker.Event
 			if err := json.UnmarshalDecode(decoder, &event); err != nil {
 				if err != io.EOF && ctx.Err() == nil {
-					// Check if likely connection closed perfectly
 					fmt.Printf("Client stream decode error: %v\n", err)
 				}
 				return
 			}
 
-			// If user filtered by stream?
-			// The /subscribe endpoint currently subscribes to ALL streams (global).
-			// The broker.Subscribe method in http_transport calls b.Subscribe(clientID, fromID) which subscribes to everything?
-			// Wait, broker.Subscribe(name, fromID) -> returns sub channel.
-			// Is broker.Subscribe global or filtered?
-			// In broker.go: Subscribe(name, fromID) subscribes to ALL events.
-			// Filtering by 'stream' is usually done client-side or we need to improve broker?
-			// The user asked "Subscribe(stream, consumerID)".
-			// If implementation is global, we should filter here.
 			if stream != "" && event.Stream != stream {
 				continue
 			}
 
 			ch <- Delivery{
 				Event: event,
-				Ack:   func() {}, // No-op for now as HTTP transport auto-acks
+				Ack:   func() {},
 			}
 		}
 	}()
