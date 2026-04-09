@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Goose Broker Control Center</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="left-nav">
+      <div class="tenant">
+        <div class="tenant-logo">GB</div>
+        <div>
+          <h1>Goose Broker</h1>
+          <p>Enterprise Control Center</p>
+        </div>
+      </div>
+
+      <section class="nav-card">
+        <label>API Endpoint</label>
+        <input id="baseUrl" type="text" placeholder="http://localhost:8081">
+        <label>API Key</label>
+        <input id="apiKey" type="password" placeholder="optional for writes">
+      </section>
+
+      <section class="nav-card">
+        <label>Selected Broker</label>
+        <input id="selectedBroker" type="text" placeholder="default">
+        <div class="btn-row">
+          <button id="applySelectedBroker" class="btn-outline">Use</button>
+          <button id="refreshAll" class="btn-outline">Refresh</button>
+        </div>
+      </section>
+
+      <section class="nav-card">
+        <p class="label-title">Navigation</p>
+        <nav class="tab-menu">
+          <button class="tabbtn active" data-tab="brokers">Broker Inventory</button>
+          <button class="tabbtn" data-tab="topics">Topic Catalog</button>
+          <button class="tabbtn" data-tab="publish">Publisher</button>
+          <button class="tabbtn" data-tab="consumers">Consumers</button>
+          <button class="tabbtn" data-tab="metrics">Metrics</button>
+        </nav>
+      </section>
+
+      <section class="nav-card">
+        <button id="saveSettings">Persist Preferences</button>
+        <p id="settingsStatus" class="muted"></p>
+      </section>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div>
+          <p class="crumb">Goose Platform / Broker Service</p>
+          <h2 id="headerTitle">Broker Inventory</h2>
+        </div>
+        <div class="topbar-actions">
+          <div class="health-pill" id="selectedBrokerPill">Broker: default</div>
+          <button id="themeToggle" class="btn-outline inline-btn">Dark Theme</button>
+        </div>
+      </header>
+
+      <section class="kpi-grid">
+        <article class="kpi-card"><p class="kpi-label">Published Messages</p><p class="kpi-value" id="kpiPublished">0</p></article>
+        <article class="kpi-card"><p class="kpi-label">Required Acks</p><p class="kpi-value" id="kpiAcks">0</p></article>
+        <article class="kpi-card"><p class="kpi-label">Topics</p><p class="kpi-value" id="kpiTopics">0</p></article>
+        <article class="kpi-card"><p class="kpi-label">Active Consumers</p><p class="kpi-value" id="kpiConsumers">0</p></article>
+      </section>
+
+      <section id="tab-brokers" class="tabpanel active">
+        <div class="panel-head"><h3>Broker Inventory</h3><p>Provision brokers and manage metadata with table controls.</p></div>
+        <div class="panel-card">
+          <div class="inline-form">
+            <input id="newBrokerName" type="text" placeholder="new broker name">
+            <button id="createBroker">Create Broker</button>
+            <button id="reloadBrokers" class="btn-outline">Reload</button>
+          </div>
+          <div class="table-toolbar">
+            <input id="brokerFilter" type="search" placeholder="Filter brokers by name/description">
+            <select id="brokerSort">
+              <option value="name_asc">Name A-Z</option>
+              <option value="name_desc">Name Z-A</option>
+              <option value="topics_desc">Most Topics</option>
+              <option value="published_desc">Most Published</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Status</th><th>Topics</th><th>Subscribers</th><th>Published</th><th>Actions</th></tr></thead>
+              <tbody id="brokerTableBody"></tbody>
+            </table>
+          </div>
+          <div class="pager"><button id="brokerPrevPage" class="btn-outline inline-btn">Prev</button><span id="brokerPageInfo">Page 1</span><button id="brokerNextPage" class="btn-outline inline-btn">Next</button></div>
+        </div>
+      </section>
+
+      <section id="tab-topics" class="tabpanel">
+        <div class="panel-head"><h3>Topic Catalog</h3><p>Create and govern topics with lifecycle controls.</p></div>
+        <div class="panel-card">
+          <div class="grid-2">
+            <div><label>Topic Name</label><input id="newTopicName" type="text" placeholder="orders.v1"></div>
+            <div><label>Retention Hours</label><input id="newTopicRetention" type="number" min="0" value="168"></div>
+          </div>
+          <label>Description</label>
+          <input id="newTopicDescription" type="text" placeholder="orders and fulfillment stream">
+          <div class="btn-row"><button id="createTopic">Create Topic</button><button id="reloadTopics" class="btn-outline">Reload Topics</button></div>
+          <div class="table-toolbar">
+            <input id="topicFilter" type="search" placeholder="Filter topics by name/description">
+            <select id="topicSort">
+              <option value="name_asc">Name A-Z</option>
+              <option value="name_desc">Name Z-A</option>
+              <option value="retention_desc">Retention High-Low</option>
+              <option value="status">Status</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Topic</th><th>Status</th><th>Retention</th><th>Description</th><th>Actions</th></tr></thead>
+              <tbody id="topicTableBody"></tbody>
+            </table>
+          </div>
+          <div class="pager"><button id="topicPrevPage" class="btn-outline inline-btn">Prev</button><span id="topicPageInfo">Page 1</span><button id="topicNextPage" class="btn-outline inline-btn">Next</button></div>
+          <p id="topicsStatus" class="muted"></p>
+        </div>
+      </section>
+
+      <section id="tab-publish" class="tabpanel">
+        <div class="panel-head"><h3>Publisher</h3><p>Submit message commits with consumer acknowledgment requirements.</p></div>
+        <div class="panel-card">
+          <label>Topic</label><input id="publishStream" type="text" placeholder="events">
+          <label>Required Consumers (comma separated)</label><input id="requiredConsumers" type="text" placeholder="worker-a,worker-b">
+          <label>Payload JSON</label><textarea id="publishPayload" rows="8">{"type":"demo","message":"hello"}</textarea>
+          <div class="btn-row"><button id="publishButton">Commit Message</button></div>
+          <pre id="publishResult" class="console-log"></pre>
+        </div>
+      </section>
+
+      <section id="tab-consumers" class="tabpanel">
+        <div class="panel-head"><h3>Consumer Sessions</h3><p>Run multiple concurrent subscribers per broker and topic.</p></div>
+        <div class="panel-card">
+          <div class="grid-3">
+            <div><label>Consumer ID</label><input id="newConsumerId" type="text" placeholder="ui-consumer-a"></div>
+            <div><label>Topic Filter</label><input id="newConsumerTopic" type="text" placeholder="events"></div>
+            <div><label>From Event ID</label><input id="newConsumerFromId" type="text" placeholder="optional resume id"></div>
+          </div>
+          <div class="btn-row"><button id="addConsumer">Launch Session</button><button id="stopAllConsumers" class="btn-outline">Stop All Sessions</button></div>
+          <p id="consumeStatus" class="muted"></p>
+        </div>
+        <div id="consumerSessions" class="session-grid"></div>
+      </section>
+
+      <section id="tab-metrics" class="tabpanel">
+        <div class="panel-head"><h3>Metrics Explorer</h3><p>Inspect runtime counters for broker and topic health.</p></div>
+        <div class="panel-card"><div class="btn-row"><button id="refreshMetrics">Refresh Metrics</button></div><pre id="metricsResult" class="console-log"></pre></div>
+      </section>
+    </main>
+  </div>
+
+  <aside id="editDrawer" class="drawer">
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+    <div class="drawer-panel">
+      <header class="drawer-head">
+        <h3 id="drawerTitle">Edit</h3>
+        <button id="closeDrawer" class="btn-outline inline-btn">Close</button>
+      </header>
+      <div class="drawer-body">
+        <div id="drawerBrokerForm" class="drawer-form hidden">
+          <label>Broker Name</label>
+          <input id="drawerBrokerName" type="text" disabled>
+          <label>Display Name</label>
+          <input id="drawerBrokerDisplayName" type="text">
+          <label>Description</label>
+          <textarea id="drawerBrokerDescription" rows="4"></textarea>
+          <label>Status</label>
+          <select id="drawerBrokerDisabled"><option value="false">Active</option><option value="true">Disabled</option></select>
+        </div>
+        <div id="drawerTopicForm" class="drawer-form hidden">
+          <label>Topic Name</label>
+          <input id="drawerTopicName" type="text" disabled>
+          <label>Description</label>
+          <textarea id="drawerTopicDescription" rows="4"></textarea>
+          <label>Retention Hours</label>
+          <input id="drawerTopicRetention" type="number" min="0">
+          <label>Status</label>
+          <select id="drawerTopicDisabled"><option value="false">Active</option><option value="true">Disabled</option></select>
+        </div>
+      </div>
+      <footer class="drawer-foot">
+        <button id="saveDrawer" class="inline-btn">Save Changes</button>
+      </footer>
+    </div>
+  </aside>
+
+  <script src="/app.js"></script>
+</body>
+</html>

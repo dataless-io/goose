@@ -1,0 +1,16 @@
+{
+  "httpaddr": ":8081",
+  "persistencedir": "./data",
+  "defaultbrokername": "default",
+  "statics": "",
+  "apikey": "",
+  "httpreadtimeout": "10s",
+  "httpreadheadertimeout": "5s",
+  "httpwritetimeout": "0s",
+  "httpidletimeout": "60s",
+  "httpshutdowntimeout": "15s",
+  "maxlogsizebytes": 10485760,
+  "maxretainedlogs": 5,
+  "unsafebatchwrites": false,
+  "synconwrite": false
+}
